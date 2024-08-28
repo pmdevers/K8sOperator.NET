@@ -1,0 +1,50 @@
+name: Build
+on: 
+  push:
+  pull_request:
+  release:
+    types:
+      - published
+env:
+  GITHUB_FEED: https://nuget.pkg.github.com/pmdevers/index.json
+  GITHUB_USER: pmdevers
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NUGET_FEED: https://api.nuget.org/v3/index.json
+  NUGET_KEY: ${{ secrets.NUGET_KEY }}
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x.x'
+      - name: Build
+        run: dotnet build -c Release
+      - name: Test
+        run: dotnet test -c Release
+      - name: DotNet Pack
+        if: github.event_name == 'release'
+        run: |
+          arrTag=(${GITHUB_REF//\// })
+          VERSION="${arrTag[2]}"
+          echo Version: $VERSION
+          VERSION="${VERSION//v}"
+          echo Clean Version: $VERSION
+          dotnet pack -v normal --no-restore -p:PackageVersion=$VERSION --configuration Release --output packages
+   
+      - name: Upload Artifact
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: packages/*.nupkg
+          
+      - name: DotNet NuGet Push  
+        if: github.event_name == 'release'
+        run: dotnet nuget push "packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate --no-symbols    
+    
