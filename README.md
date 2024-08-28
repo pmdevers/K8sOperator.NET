@@ -1,16 +1,16 @@
-# [PROJECT TITLE]
+# K8sOperator.NET
 
-![Github Release](https://img.shields.io/github/v/release/pmdevers/nuget-package-template) 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/pmdevers/nuget-package-template/.github%2Fworkflows%2Fbuild-publish.yml) 
-![GitHub License](https://img.shields.io/github/license/pmdevers/nuget-package-template) 
-![Github Issues Open](https://img.shields.io/github/issues/pmdevers/nuget-package-template) 
-![Github Pull Request Open](https://img.shields.io/github/issues-pr/pmdevers/nuget-package-template) 
-[![Scheduled Code Security Testing](https://github.com/pmdevers/nuget-package-template/actions/workflows/security-analysis.yml/badge.svg?event=schedule)](https://github.com/pmdevers/nuget-package-template/actions/workflows/security-analysis.yml)
+![Github Release](https://img.shields.io/github/v/release/pmdevers/K8sOperator.NET) 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/pmdevers/K8sOperator.NET/.github%2Fworkflows%2Fbuild-publish.yml) 
+![GitHub License](https://img.shields.io/github/license/pmdevers/K8sOperator.NET) 
+![Github Issues Open](https://img.shields.io/github/issues/pmdevers/K8sOperator.NET) 
+![Github Pull Request Open](https://img.shields.io/github/issues-pr/pmdevers/K8sOperator.NET) 
+[![Scheduled Code Security Testing](https://github.com/pmdevers/K8sOperator.NET/actions/workflows/security-analysis.yml/badge.svg?event=schedule)](https://github.com/pmdevers/K8sOperator.NET/actions/workflows/security-analysis.yml)
 
 
-[PROJECT DESCRIPTION]
+K8sOperator.NET is a powerful and intuitive library designed for creating Kubernetes Operators using C#. It simplifies the development of robust, cloud-native operators by leveraging the full capabilities of the .NET ecosystem, making it easier than ever to manage complex Kubernetes workloads with custom automation.
 
-![Alt text](https://raw.githubusercontent.com/pmdevers/nuget-package-template/master/assets/logo.png "logo")
+![Alt text](https://raw.githubusercontent.com/pmdevers/K8sOperator.NET/master/assets/logo.png "logo")
 
 ## Table of Contents
 
@@ -30,13 +30,13 @@
 To install the package, use the following command in your .NET Core project:
 
 ```bash
-dotnet add package [projectname]
+dotnet add package K8sOperator.NET
 ```
 
 Alternatively, you can add it manually to your `.csproj` file:
 
 ```xml
-<PackageReference Include="[projectname]" Version="0.1.0" />
+<PackageReference Include="K8sOperator.NET" Version="0.1.0" />
 ```
 
 ## Usage
@@ -45,10 +45,8 @@ Here are some basic examples of how to use the library:
 
 ### Setup
 
-First, initialize the `SonarCloudClient` with your SonarCloud token:
-
 ```csharp
-using [ProjectName];
+using K8sOperator.NET;
 
 var builder = WebApplication.CreateBuilder(args);
 
