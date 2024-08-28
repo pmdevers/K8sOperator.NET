@@ -24,9 +24,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{4D1F50
 		assets\logo.png = assets\logo.png
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName", "src\ProjectName\ProjectName.csproj", "{93A7C744-E61D-49EB-9203-7CB6A7047462}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "K8sOperator.NET.Tests", "test\K8sOperator.NET.Tests\K8sOperator.NET.Tests.csproj", "{C0360068-BBDE-4ABF-B357-765C792CDCF5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectName.Tests", "test\ProjectName.Tests\ProjectName.Tests.csproj", "{AB3DC0EB-4588-4454-A546-01DCF5E8BDFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "K8sOperator.NET", "src\K8sOperator.NET\K8sOperator.NET.csproj", "{160DFED1-DD63-412C-9D60-84D965626DD9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{ED5FF81E-F3EA-4BEF-9B72-31A24F9386E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleOperator", "examples\SimpleOperator\SimpleOperator.csproj", "{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,14 +38,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{93A7C744-E61D-49EB-9203-7CB6A7047462}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93A7C744-E61D-49EB-9203-7CB6A7047462}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93A7C744-E61D-49EB-9203-7CB6A7047462}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93A7C744-E61D-49EB-9203-7CB6A7047462}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AB3DC0EB-4588-4454-A546-01DCF5E8BDFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AB3DC0EB-4588-4454-A546-01DCF5E8BDFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AB3DC0EB-4588-4454-A546-01DCF5E8BDFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AB3DC0EB-4588-4454-A546-01DCF5E8BDFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0360068-BBDE-4ABF-B357-765C792CDCF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0360068-BBDE-4ABF-B357-765C792CDCF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0360068-BBDE-4ABF-B357-765C792CDCF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0360068-BBDE-4ABF-B357-765C792CDCF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{160DFED1-DD63-412C-9D60-84D965626DD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{160DFED1-DD63-412C-9D60-84D965626DD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{160DFED1-DD63-412C-9D60-84D965626DD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{160DFED1-DD63-412C-9D60-84D965626DD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -49,8 +57,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{029923F0-FD53-4B75-BA07-F102BBE9C429} = {898CC489-C84A-49BD-9D77-3CEA1F6A7180}
 		{0CCCC7F3-A522-4535-8D5A-1E53815936D3} = {9320CC2F-6BB6-4B29-B625-EB427EE87891}
-		{93A7C744-E61D-49EB-9203-7CB6A7047462} = {898CC489-C84A-49BD-9D77-3CEA1F6A7180}
-		{AB3DC0EB-4588-4454-A546-01DCF5E8BDFF} = {9320CC2F-6BB6-4B29-B625-EB427EE87891}
+		{C0360068-BBDE-4ABF-B357-765C792CDCF5} = {9320CC2F-6BB6-4B29-B625-EB427EE87891}
+		{160DFED1-DD63-412C-9D60-84D965626DD9} = {898CC489-C84A-49BD-9D77-3CEA1F6A7180}
+		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25} = {ED5FF81E-F3EA-4BEF-9B72-31A24F9386E3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {49DE7562-1920-49AD-A220-E10302CEC632}

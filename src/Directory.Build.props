@@ -7,11 +7,11 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <CompanyName>PMDEvers</CompanyName>
-    <ProjectName>ProjectName</ProjectName>
+    <ProjectName>K8sOperator.NET</ProjectName>
 
     <PackageId>$(ProjectName)</PackageId>
     <Description>
-
+      K8sOperator.NET is a powerful and intuitive library designed for creating Kubernetes Operators using C#. It simplifies the development of robust, cloud-native operators by leveraging the full capabilities of the .NET ecosystem, making it easier than ever to manage complex Kubernetes workloads with custom automation.
     </Description>
     <Authors>Patrick Evers</Authors>
     <Owners>$(CompanyName)</Owners>
