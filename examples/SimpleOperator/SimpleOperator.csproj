@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\K8sOperator.NET\K8sOperator.NET.csproj" />
+  </ItemGroup>
+
 </Project>

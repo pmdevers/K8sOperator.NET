@@ -1,22 +1,18 @@
-﻿
-namespace K8sOperator.NET.Builder;
+﻿namespace K8sOperator.NET.Builder;
 internal class OperatorDatasource(IServiceProvider serviceProvider) : IOperatorDataSource
 {
     private readonly List<OperatorEntry> _entries = [];
 
     public IServiceProvider ServiceProvider { get; } = serviceProvider;
 
-    public OperatorConventionBuilder AddController(string group, string version, string entity, Delegate watch)
+    public IOperatorConventionBuilder AddController(Type controllerType)
     {
         var conventions = new AddAfterProcessBuildConventionCollection();
         var finallyConventions = new AddAfterProcessBuildConventionCollection();
 
         _entries.Add(new()
         {
-            Group = group,
-            Version = version,
-            Entity = entity,
-            Delegate = watch,
+            ControllerType = controllerType,
             Conventions = conventions,
             FinallyConventions = finallyConventions
         });
@@ -24,33 +20,36 @@ internal class OperatorDatasource(IServiceProvider serviceProvider) : IOperatorD
         return new OperatorConventionBuilder(conventions, finallyConventions);
     }
 
-    public IEnumerable<IOperatorProcess> GetProcesses()
+    public IEnumerable<IEventWatcher> GetWatchers()
     {
         foreach (var controller in _entries) 
         {
-            var builder = new OperatorBuilder(serviceProvider);
+            var builder = new OperatorBuilder(ServiceProvider);
 
             foreach (var convention in controller.Conventions)
             {
                 convention(builder);
             }
 
-            var o = builder.Build();
+            var o = EventWatcherFactory.Create(controller.ControllerType, ServiceProvider, builder.MetaData);
+
+            foreach (var convention in controller.FinallyConventions)
+            {
+                convention(builder);
+            }
+
+            yield return o;
         }
     }
-    private struct OperatorEntry()
+
+    private sealed class OperatorEntry
     {
-        public string Group { get; set; } = string.Empty;
-        public string Version { get; set; } = string.Empty;
-        public string Entity { get; set; } = string.Empty;
-
-        public Delegate Delegate { get; set; } = () => Task.CompletedTask;
-
-        public AddAfterProcessBuildConventionCollection Conventions { get; init; }
-        public AddAfterProcessBuildConventionCollection FinallyConventions { get; init; }
+        public required Type ControllerType { get; init; }
+        public required AddAfterProcessBuildConventionCollection Conventions { get; init; }
+        public required AddAfterProcessBuildConventionCollection FinallyConventions { get; init; }
         
     }
-    private sealed class AddAfterProcessBuildConventionCollection :
+    internal sealed class AddAfterProcessBuildConventionCollection :
             List<Action<IOperatorBuilder>>,
             ICollection<Action<IOperatorBuilder>>
     {

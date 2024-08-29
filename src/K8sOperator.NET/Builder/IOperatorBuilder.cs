@@ -20,7 +20,9 @@ public interface IOperatorBuilder
     List<object> MetaData { get; }
 }
 
-
+/// <summary>
+/// 
+/// </summary>
 public interface IOperatorDataSource
 {
     /// <summary>
@@ -32,11 +34,11 @@ public interface IOperatorDataSource
     /// 
     /// </summary>
     /// <returns></returns>
-    OperatorConventionBuilder AddController(string group, string version, string entity, Delegate watch);
+    IOperatorConventionBuilder AddController(Type controllerType);
 
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
-    IEnumerable<IController> GetProcesses();
+    IEnumerable<IEventWatcher> GetWatchers();
 }
