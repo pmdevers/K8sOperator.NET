@@ -3,7 +3,6 @@ using K8sOperator.NET.Models;
 
 namespace SimpleOperator.Projects;
 
-[KubernetesEntity(ApiVersion = "v1alpha1", Group = "sonarcloud.io", Kind = "Project", PluralName = "projects")]
 public class Project : CustomResource<Project.Specs, Project.ProjectStatus>
 {
     public class Specs

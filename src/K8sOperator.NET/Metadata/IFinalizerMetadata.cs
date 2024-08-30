@@ -1,5 +1,4 @@
 ﻿using K8sOperator.NET.Helpers;
-using System.ComponentModel;
 
 namespace K8sOperator.NET.Metadata;
 internal interface IFinalizerMetadata
@@ -16,3 +15,11 @@ internal class FinalizerMetadata(string name) : IFinalizerMetadata
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(Name), Name);
 }
+
+
+
+
+
+
+
+

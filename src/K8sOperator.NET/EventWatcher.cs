@@ -16,19 +16,6 @@ public interface IEventWatcher
     /// <summary>
     /// 
     /// </summary>
-    KubernetesEntityAttribute EntityAttribute{get;}
-    /// <summary>
-    /// 
-    /// </summary>
-    string Namespace{get;}
-    /// <summary>
-    /// 
-    /// </summary>
-    string LabelSelector { get; }
-
-    /// <summary>
-    /// 
-    /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task Start(CancellationToken cancellationToken);
@@ -41,13 +28,17 @@ internal class EventWatcher<T>(
     ILoggerFactory loggerfactory) : IEventWatcher
     where T: CustomResource
 {
-    public KubernetesEntityAttribute EntityAttribute => typeof(T).GetCustomAttribute<KubernetesEntityAttribute>()!;
-    public string Namespace => metadata.OfType<IWatchNamespaceMetadata>().FirstOrDefault()?.Namespace ?? "default";
-    public string LabelSelector => metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
+    private string Group => metadata.OfType<IGroupMetadata>().First().Group;
+    private string ApiVersion => metadata.OfType<IApiVersionMetadata>().First().ApiVersion;
+    private string Kind => metadata.OfType<IKindMetadata>().First().Kind;
+    private string PluralName => metadata.OfType<IPluralNameMetadata>().First().PluralName;
+    private string Namespace => metadata.OfType<IWatchNamespaceMetadata>().FirstOrDefault()?.Namespace ?? "default";
+    private string LabelSelector => metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
+    private string Finalizer => metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
 
     private readonly ChangeTracker _changeTracker = new();
 
-    private string Finalizer => metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
+    
     private ILogger logger => loggerfactory.CreateLogger("watcher");
 
     
@@ -61,21 +52,22 @@ internal class EventWatcher<T>(
         _isRunning = true;
 
         var response = await client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
-            EntityAttribute.Group,
-            EntityAttribute.ApiVersion,
+            Group,
+            ApiVersion,
             Namespace,
-            EntityAttribute.PluralName,
+            PluralName,
             watch: true,
+            allowWatchBookmarks: true,
             labelSelector: LabelSelector,
             timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
             cancellationToken: cancellationToken
         ).ConfigureAwait(false)!;
-        logger.BeginWatch(Namespace, EntityAttribute.Kind, LabelSelector);
+        logger.BeginWatch(Namespace, Kind, LabelSelector);
 
         using var _ = response.Watch<T, object>(OnEvent, OnError, OnClosed);
         await WaitOneAsync(cancellationToken.WaitHandle);
 
-        logger.EndWatch(Namespace, EntityAttribute.PluralName, LabelSelector);
+        logger.EndWatch(Namespace, PluralName, LabelSelector);
     }
 
     private void OnEvent(WatchEventType eventType, T customResource)
@@ -100,18 +92,74 @@ internal class EventWatcher<T>(
         {
             case WatchEventType.Added:
             case WatchEventType.Modified:
-                await HandleAddOrModifyAsync(resource, _cancellationToken);
+                if(resource.Metadata.DeletionTimestamp is not null)
+                {
+                    await HandleFinalizeAsync(resource, _cancellationToken);
+                } 
+                else
+                {
+                    await HandleAddOrModifyAsync(resource, _cancellationToken);
+                }
                 break;
             case WatchEventType.Deleted:
                 await HandleDeletedEventAsync(resource, _cancellationToken);
                 break;
             case WatchEventType.Error:
+                await HandleErrorEventAsync(resource, _cancellationToken);
                 break;
             case WatchEventType.Bookmark:
+                await HandleBookmarkEventAsync(controller, resource);
                 break;
             default:
                 break;
         }
+    }
+
+    private async Task HandleErrorEventAsync(T resource, CancellationToken cancellationToken)
+    {
+        logger.HandleError(resource);
+
+        logger.BeginError(resource);
+
+        await controller.ErrorAsync(resource, cancellationToken);
+        
+        logger.EndError(resource);
+    }
+
+    private async Task HandleBookmarkEventAsync(Controller<T> controller, T resource)
+    {
+        logger.HandleBookmark(resource);
+
+        logger.BeginBookmark(resource);
+
+        await controller.BookmarkAsync(resource, _cancellationToken);
+        
+        _changeTracker.TrackResourceGenerationAsHandled(resource);
+
+        logger.EndBookmark(resource);
+    }
+
+    private async Task HandleFinalizeAsync(T resource, CancellationToken cancellationToken)
+    {
+        logger.HandleFinalize(resource);
+
+        if (!HasFinalizers(resource))
+        {
+            logger.SkipFinalize(resource);
+            return;
+        }
+
+        logger.BeginFinalize(resource);
+
+        await controller.FinalizeAsync(resource, cancellationToken);
+
+        if (HasFinalizers(resource))
+        {
+            logger.RemoveFinalizer(resource);
+            await RemoveFinalizerAsync(resource, cancellationToken);
+        }
+
+        logger.EndFinalize(resource);
     }
 
     private async Task HandleDeletedEventAsync(T resource, CancellationToken cancellationToken)
@@ -129,11 +177,6 @@ internal class EventWatcher<T>(
         await controller.DeleteAsync(resource, cancellationToken);
 
         _changeTracker.TrackResourceGenerationAsDeleted(resource);
-
-        if (HasFinalizers(resource))
-        {
-            await RemoveFinalizerAsync(resource, cancellationToken);
-        }
 
         logger.EndDelete(resource);
     }
@@ -160,10 +203,10 @@ internal class EventWatcher<T>(
         // Replace the resource
         var result = await client.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
             resource,
-            EntityAttribute.Group,
-            EntityAttribute.ApiVersion,
+            Group,
+            ApiVersion,
             resource.Metadata.NamespaceProperty,
-            EntityAttribute.PluralName,
+            PluralName,
             resource.Metadata.Name,
             cancellationToken: cancellationToken
         ).ConfigureAwait(false);

@@ -1,4 +1,7 @@
-﻿namespace K8sOperator.NET.Builder;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Security.AccessControl;
+
+namespace K8sOperator.NET.Builder;
 internal class OperatorDatasource(IServiceProvider serviceProvider) : IOperatorDataSource
 {
     private readonly List<OperatorEntry> _entries = [];
@@ -31,14 +34,16 @@ internal class OperatorDatasource(IServiceProvider serviceProvider) : IOperatorD
                 convention(builder);
             }
 
-            var o = EventWatcherFactory.Create(controller.ControllerType, ServiceProvider, builder.MetaData);
+            var o = ControllerFactory.Create(controller.ControllerType, ServiceProvider, builder);
 
             foreach (var convention in controller.FinallyConventions)
             {
                 convention(builder);
             }
 
-            yield return o;
+            var watcherType = typeof(EventWatcher<>).MakeGenericType(o.ResourceType);
+
+            yield return (IEventWatcher)ActivatorUtilities.CreateInstance(ServiceProvider, watcherType, o.Controller, o.Metadata);
         }
     }
 

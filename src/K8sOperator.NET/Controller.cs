@@ -9,12 +9,6 @@ public interface IController
 {
 }
 
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-sealed class KubernetesFinalizerAttribute(string name) : Attribute
-{
-    public string Name { get; } = name;
-}
-
 /// <summary>
 /// 
 /// </summary>
@@ -40,6 +34,39 @@ public abstract class Controller<T> : IController
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public virtual Task DeleteAsync(T resource, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="resource"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public virtual Task FinalizeAsync(T resource, CancellationToken cancellationToken)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="resource"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public virtual Task BookmarkAsync(T resource, CancellationToken cancellationToken) 
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="resource"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public virtual Task ErrorAsync(T resource, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;
     }

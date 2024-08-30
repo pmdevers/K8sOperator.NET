@@ -1,5 +1,6 @@
 ﻿using k8s;
 using k8s.Models;
+using K8sOperator.NET.Builder;
 using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -7,16 +8,28 @@ using System.Reflection;
 
 namespace K8sOperator.NET;
 
-internal static class EventWatcherFactory
+internal static class ControllerFactory
 {
-    public static IEventWatcher Create(Type controllerType, IServiceProvider serviceProvider, List<object> metadata)
+    public static ControllerResult Create(Type controllerType, IServiceProvider serviceProvider, IOperatorBuilder builder)
     {
         var resourceType = controllerType.BaseType!.GetGenericArguments()[0];
-        var controller = ActivatorUtilities.CreateInstance(serviceProvider, controllerType);
-        var watcherType = typeof(EventWatcher<>).MakeGenericType(resourceType);
-
-        return (IEventWatcher)ActivatorUtilities.CreateInstance(serviceProvider, watcherType, controller, metadata);
+        var controller = (IController)ActivatorUtilities.CreateInstance(serviceProvider, controllerType);
+        
+        return new()
+        {
+            Controller = controller,
+            ResourceType = resourceType,
+            Metadata = builder.MetaData
+        };
         
     }
 
+}
+
+
+internal class ControllerResult
+{
+    public required IController Controller { get;set; }
+    public required Type ResourceType { get; set; }
+    public required List<object> Metadata { get; set; }
 }

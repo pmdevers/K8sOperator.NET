@@ -106,13 +106,79 @@ internal static partial class LoggingExtensions
     [LoggerMessage(
         EventId = 15,
         Level = LogLevel.Debug,
-        Message = "Akip Add or Modify {resource} already handled")]
+        Message = "Skip Add or Modify {resource} already handled")]
     public static partial void SkipAddOrModify(this ILogger logger, CustomResource resource);
 
     [LoggerMessage(
         EventId = 16,
         Level = LogLevel.Debug,
-        Message = "Akip Add or Modify {resource} already handled")]
+        Message = "End Add or Modify {resource} already handled")]
     public static partial void EndAddOrModify(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 17,
+        Level = LogLevel.Debug,
+        Message = "Start Finalize {resource}")]
+    public static partial void HandleFinalize(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 18,
+        Level = LogLevel.Debug,
+        Message = "Skip Finalize {resource}")]
+    public static partial void SkipFinalize(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 19,
+        Level = LogLevel.Debug,
+        Message = "Begin Finalize {resource}")]
+    public static partial void BeginFinalize(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 20,
+        Level = LogLevel.Debug,
+        Message = "End Finalize {resource}")]
+    public static partial void EndFinalize(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 21,
+        Level = LogLevel.Debug,
+        Message = "Remove Finalizer from {resource}")]
+    public static partial void RemoveFinalizer(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 22,
+        Level = LogLevel.Debug,
+        Message = "Handle Bookmark {resource}")]
+    public static partial void HandleBookmark(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 23,
+        Level = LogLevel.Debug,
+        Message = "Begin Bookmark {resource}")]
+    public static partial void BeginBookmark(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 24,
+        Level = LogLevel.Debug,
+        Message = "End Bookmark {resource}")]
+    public static partial void EndBookmark(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 25,
+        Level = LogLevel.Debug,
+        Message = "Handle Error {resource}")]
+    public static partial void HandleError(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 26,
+        Level = LogLevel.Debug,
+        Message = "Begin Error {resource}")]
+    public static partial void BeginError(this ILogger logger, CustomResource resource);
+
+    [LoggerMessage(
+        EventId = 27,
+        Level = LogLevel.Debug,
+        Message = "End Error {resource}")]
+    public static partial void EndError(this ILogger logger, CustomResource resource);
 
 }
