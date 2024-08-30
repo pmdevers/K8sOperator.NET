@@ -18,8 +18,8 @@
       ],
       "output": "_site",
       "globalMetadata": {
-        "_appLogoPath": "./assets/logo.png",
-        "_appFaviconPath": "./assets/logo.png"
+        "_appLogoPath": "./assets/logo_small.png",
+        "_appFaviconPath": "./assets/logo_small.png"
       },
       "fileMetadataFiles": [],
       "template": ["default", "modern"],
