@@ -11,6 +11,7 @@ public interface IOperatorApplicationBuilder
     IServiceCollection Services { get; }
     ILoggingBuilder Logging { get; }
     IControllerDataSource DataSource { get; }
+
     List<object> Metadata { get; }
     
     IOperatorApplication Build();
@@ -22,7 +23,8 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
     private readonly ConfigurationManager _configurationManager = new();
     private readonly LoggingBuilder _logging;
     private readonly KubernetesBuilder _kubernetes;
-    
+    private readonly string[] _args;
+
     internal OperatorApplicationBuilder(string[] args)
     {
         _logging = new(_serviceCollection);
@@ -31,21 +33,25 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         ConfigureConfiguration();
         ConfigureLogging();
         ConfigureKubernetes();
+        _args = args;
     }
 
     public IConfiguration Configuration => _configurationManager;
     public IServiceCollection Services => _serviceCollection;
     public ILoggingBuilder Logging => _logging;
     public IKubernetesBuilder Kubernetes => _kubernetes;
+
     public IControllerDataSource DataSource { get; set; } = new ControllerDatasource();
 
     public List<object> Metadata { get; } = [];
 
     public IOperatorApplication Build()
     {
+        _serviceCollection.AddSingleton(DataSource);
+
         var serviceProvider = _serviceCollection.BuildServiceProvider();
 
-       return new OperatorHostApplication(serviceProvider, DataSource);
+       return new OperatorHostApplication(serviceProvider, DataSource, _args);
     }
 
     private void ConfigureConfiguration()
@@ -62,6 +68,7 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         _serviceCollection.AddLogging(config =>
         {
             config.AddConfiguration(Configuration.GetSection("Logging"));
+            config.AddConsole();
         });
     }
 

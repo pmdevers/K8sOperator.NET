@@ -31,9 +31,7 @@ internal class EventWatcherBuilder(IServiceProvider serviceProvider, IController
 {
     public IEventWatcher Build()
     {
-        var resourceType = controller.GetType().BaseType!.GetGenericArguments()[0];
-        var watcherType = typeof(EventWatcher<>).MakeGenericType(resourceType);
-
+        var watcherType = typeof(EventWatcher<>).MakeGenericType(controller.ResourceType);
         return (IEventWatcher)ActivatorUtilities.CreateInstance(serviceProvider, watcherType, controller, metadata);
     }
 }

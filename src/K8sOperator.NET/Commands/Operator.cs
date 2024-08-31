@@ -1,13 +1,18 @@
-﻿using K8sOperator.NET.Builder;
+﻿using DotMake.CommandLine;
+using K8sOperator.NET.Builder;
 using K8sOperator.NET.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace K8sOperator.NET;
+namespace K8sOperator.NET.Commands;
 
+[CliCommand(
+    Name = "operator",
+    NamePrefixConvention = CliNamePrefixConvention.DoubleHyphen,
+    Parent = typeof(Root)
+    )]
 internal class Operator(IServiceProvider serviceProvider, IControllerDataSource dataSource, ILoggerFactory loggerFactory)
 {
     private readonly CancellationTokenSource _tokenSource = new();
-
 
     public ILogger<Operator> Logger { get; } = loggerFactory.CreateLogger<Operator>();
     public IEnumerable<IEventWatcher> Watchers

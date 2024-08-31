@@ -7,6 +7,10 @@ namespace K8sOperator.NET;
 /// </summary>
 public interface IController
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    Type ResourceType { get; }
 }
 
 /// <summary>
@@ -16,6 +20,11 @@ public interface IController
 public abstract class Controller<T> : IController
     where T : CustomResource
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    public Type ResourceType { get; } = typeof(T);
+
     /// <summary>
     /// 
     /// </summary>

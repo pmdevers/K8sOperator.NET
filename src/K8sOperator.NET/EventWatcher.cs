@@ -4,7 +4,6 @@ using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Models;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 
 namespace K8sOperator.NET;
 
@@ -13,6 +12,9 @@ namespace K8sOperator.NET;
 /// </summary>
 public interface IEventWatcher
 {
+    public IReadOnlyList<object> Metadata { get; }
+    public IController Controller { get; }
+
     /// <summary>
     /// 
     /// </summary>
@@ -37,14 +39,12 @@ internal class EventWatcher<T>(
     private string Finalizer => metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
 
     private readonly ChangeTracker _changeTracker = new();
-
-    
     private ILogger logger => loggerfactory.CreateLogger("watcher");
-
-    
     private bool _isRunning;
-    
     private CancellationToken _cancellationToken = CancellationToken.None;
+    
+    public IReadOnlyList<object> Metadata => metadata;
+    public IController Controller => controller;
 
     public async Task Start(CancellationToken cancellationToken)
     {

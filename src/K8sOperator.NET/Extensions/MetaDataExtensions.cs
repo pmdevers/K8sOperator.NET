@@ -11,6 +11,20 @@ public static class MetadataExtensions
     /// <summary>
     /// 
     /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T2"></typeparam>
+    /// <param name="metaData"></param>
+    /// <param name="selector"></param>
+    /// <returns></returns>
+    public static T2? TryGetValue<T, T2>(this IReadOnlyList<object> metaData, Func<T, T2> selector)
+    {
+        var type = metaData.OfType<T>().FirstOrDefault();
+        return type is null ? default : selector(type);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <typeparam name="TBuilder"></typeparam>
     /// <param name="builder"></param>
     /// <param name="group"></param>

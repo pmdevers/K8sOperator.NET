@@ -1,4 +1,6 @@
-﻿using K8sOperator.NET.Builder;
+﻿using DotMake.CommandLine;
+using K8sOperator.NET.Builder;
+using K8sOperator.NET.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace K8sOperator.NET;
@@ -29,10 +31,13 @@ public static class OperatorHost
 /// </summary>
 public partial class OperatorHostApplication : IOperatorApplication
 {
-    internal OperatorHostApplication(IServiceProvider serviceProvider, IControllerDataSource dataSource)
+    private readonly string[] _args;
+
+    internal OperatorHostApplication(IServiceProvider serviceProvider, IControllerDataSource dataSource, string[] args)
     {
         ServiceProvider = serviceProvider;
         DataSource = dataSource;
+        _args = args;
     }
 
     /// <summary>
@@ -44,10 +49,10 @@ public partial class OperatorHostApplication : IOperatorApplication
     /// 
     /// </summary>
     public IControllerDataSource DataSource { get; }
-    
+
     public async Task RunAsync()
     {
-        var ops = ActivatorUtilities.CreateInstance<Operator>(ServiceProvider, DataSource);
-        await ops.RunAsync();
+        Cli.Ext.SetServiceProvider(ServiceProvider);
+        await Cli.RunAsync<Root>(_args);
     }
 }

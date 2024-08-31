@@ -2,7 +2,17 @@
     "profiles": {
         "Operator": {
             "commandName": "Project",
-            "commandLineArgs": "--operator",
+            "commandLineArgs": "operator",
+            "launchBrowser": true,
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true,
+            "applicationUrl": "http://localhost:5276"
+        },
+        "install": {
+            "commandName": "Project",
+            "commandLineArgs": "install --export",
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
