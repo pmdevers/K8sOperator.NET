@@ -6,7 +6,8 @@ internal interface IFinalizerMetadata
     string Name { get; }
 }
 
-internal class FinalizerMetadata(string name) : IFinalizerMetadata
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+internal class FinalizerMetadata(string name) : Attribute, IFinalizerMetadata
 {
     public const string Default = "operator.default.finalizer";
 

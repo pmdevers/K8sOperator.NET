@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Helpers;
+using System.Xml.Linq;
 
 namespace K8sOperator.NET.Metadata;
 
@@ -10,7 +11,6 @@ internal interface IGroupMetadata
 internal class GroupMetadata(string group) : IGroupMetadata
 {
     public string Group => group;
-
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(Group), Group);
 }

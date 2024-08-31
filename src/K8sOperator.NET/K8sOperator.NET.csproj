@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Models\**" />
+    <EmbeddedResource Remove="Models\**" />
+    <None Remove="Models\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="EventWatcherFactory.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Models\CustomResource.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="KubernetesClient" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />

@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Helpers;
+using System.Xml.Linq;
 
 namespace K8sOperator.NET.Metadata;
 
@@ -9,7 +10,6 @@ internal interface IPluralNameMetadata
 internal class PluralNameMetadata(string pluralName) : IPluralNameMetadata
 {
     public string PluralName => pluralName;
-
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(PluralName), PluralName);
 }

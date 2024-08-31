@@ -1,28 +1,25 @@
 ﻿using K8sOperator.NET.Builder;
 using K8sOperator.NET.Extensions;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace K8sOperator.NET;
 
-internal sealed class Operator(
-    IOperatorBuilder builder,
-    ILogger<Operator> logger) : IOperator
+internal class Operator(IServiceProvider serviceProvider, IControllerDataSource dataSource, ILoggerFactory loggerFactory)
 {
-    private readonly IOperatorBuilder _builder = builder;
-    private readonly ILogger<Operator> _logger = logger;
+    private readonly CancellationTokenSource _tokenSource = new();
 
+
+    public ILogger<Operator> Logger { get; } = loggerFactory.CreateLogger<Operator>();
     public IEnumerable<IEventWatcher> Watchers
-        => _builder.DataSource?.GetWatchers() ?? [];
+        => dataSource.GetWatchers(serviceProvider) ?? [];
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public async Task RunAsync()
     {
-        _logger.StartOperator();
+        Logger.StartOperator();
 
-        if(!Watchers.Any())
+        if (!Watchers.Any())
         {
-            _logger.NoWatchers();
-            await StopAsync(cancellationToken);
+            Logger.NoWatchers();
             return;
         }
 
@@ -30,23 +27,12 @@ internal sealed class Operator(
 
         foreach (var watcher in Watchers)
         {
-            tasks.Add(watcher.Start(cancellationToken));
+            tasks.Add(watcher.Start(_tokenSource.Token));
         }
 
         await Task.WhenAll(tasks);
-    }
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _logger.StopOperator();
-        return Task.CompletedTask;
+        await _tokenSource.CancelAsync();
+        _tokenSource.Dispose();
     }
-    
-}
-
-/// <summary>
-/// Describes a Kubernetes Operator
-/// </summary>
-public interface IOperator : IHostedService
-{
 }

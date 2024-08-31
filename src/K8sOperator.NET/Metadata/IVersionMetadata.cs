@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Helpers;
+using System.Xml.Linq;
 
 namespace K8sOperator.NET.Metadata;
 
@@ -10,7 +11,6 @@ internal interface IApiVersionMetadata
 internal class ApiVersionMetadata(string apiVersion) : IApiVersionMetadata
 {
     public string ApiVersion => apiVersion;
-
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(ApiVersion), ApiVersion);
 }

@@ -51,7 +51,7 @@ internal class EventWatcher<T>(
         _cancellationToken = cancellationToken;
         _isRunning = true;
 
-        var response = await client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
+        var response = client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
             Group,
             ApiVersion,
             Namespace,
@@ -61,11 +61,14 @@ internal class EventWatcher<T>(
             labelSelector: LabelSelector,
             timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
             cancellationToken: cancellationToken
-        ).ConfigureAwait(false)!;
+        );
+
         logger.BeginWatch(Namespace, Kind, LabelSelector);
 
-        using var _ = response.Watch<T, object>(OnEvent, OnError, OnClosed);
-        await WaitOneAsync(cancellationToken.WaitHandle);
+        await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
+        {
+            OnEvent(type, item);
+        }
 
         logger.EndWatch(Namespace, PluralName, LabelSelector);
     }
@@ -240,56 +243,12 @@ internal class EventWatcher<T>(
         logger.EndAddOrModify(resource);
     }
 
-
-    private void OnClosed()
-    {
-        logger.LogError("Watcher closed.");
-
-        if (_isRunning)
-        {
-            throw new InvalidOperationException();
-        }
-    }
-
     private void OnError(Exception exception)
     {
         if (_isRunning)
         {
             logger.LogError(exception, "Watcher error");
         }
-    }
-
-    private static Task<bool> WaitOneAsync(WaitHandle waitHandle, int millisecondsTimeOutInterval = Timeout.Infinite)
-    {
-        ArgumentNullException.ThrowIfNull(waitHandle);
-
-        var tcs = new TaskCompletionSource<bool>();
-
-        var rwh = ThreadPool.RegisterWaitForSingleObject(
-            waitHandle,
-            callBack: (_, timedOut) => { tcs.TrySetResult(!timedOut); },
-            state: null,
-            millisecondsTimeOutInterval: millisecondsTimeOutInterval,
-            executeOnlyOnce: true
-        );
-
-        var task = tcs.Task;
-
-        task.ContinueWith(t =>
-        {
-            rwh.Unregister(waitObject: null);
-            try
-            {
-                return t.Result;
-            }
-            catch
-            {
-                return false;
-                throw;
-            }
-        });
-
-        return task;
     }
 }
 

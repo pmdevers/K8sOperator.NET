@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Helpers;
+using System.Xml.Linq;
 
 namespace K8sOperator.NET.Metadata;
 
@@ -16,7 +17,6 @@ public interface IWatchNamespaceMetadata
 internal class WatchNamespaceMetadata(string ns) : IWatchNamespaceMetadata
 {
     public string Namespace => ns;
-
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(Namespace), Namespace);
 }
