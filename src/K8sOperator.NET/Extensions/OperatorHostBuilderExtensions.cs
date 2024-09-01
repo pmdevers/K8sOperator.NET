@@ -1,6 +1,7 @@
 ﻿using K8sOperator.NET;
 using K8sOperator.NET.Builder;
 using K8sOperator.NET.Extensions;
+using K8sOperator.NET.Metadata;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -9,6 +10,27 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class OperatorHostBuilderExtensions
 {
+    public static IOperatorApplicationBuilder WithName(this IOperatorApplicationBuilder builder,
+        string name
+        )
+    {
+        builder.Metadata.RemoveAll(x => x.GetType() == typeof(OperatorNameMetadata));
+        builder.Metadata.Add(new OperatorNameMetadata(name.ToLowerInvariant()));
+        return builder;
+    }
+
+    public static IOperatorApplicationBuilder WithImage(this IOperatorApplicationBuilder builder,
+        string registery = "ghcr.io",
+        string repository = "",
+        string name = "",
+        string tag = ""
+        )
+    {
+        builder.Metadata.RemoveAll(x => x.GetType() == typeof(ImageMetadata));
+        builder.Metadata.Add(new ImageMetadata(registery, repository, name, tag));
+        return builder;
+    }
+
     /// <summary>
     /// 
     /// </summary>

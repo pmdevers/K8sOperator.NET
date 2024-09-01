@@ -5,6 +5,8 @@
 /// </summary>
 public interface IControllerDataSource
 {
+    IReadOnlyList<object> Metadata { get; }
+
     /// <summary>
     /// 
     /// </summary>

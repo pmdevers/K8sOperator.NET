@@ -19,6 +19,7 @@ public interface IOperatorApplicationBuilder
 
 internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IControllerBuilder
 {
+    private readonly List<object> _metadata = [];
     private readonly ServiceCollection _serviceCollection = new();
     private readonly ConfigurationManager _configurationManager = new();
     private readonly LoggingBuilder _logging;
@@ -34,6 +35,7 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         ConfigureLogging();
         ConfigureKubernetes();
         _args = args;
+        DataSource = new ControllerDatasource(_metadata);
     }
 
     public IConfiguration Configuration => _configurationManager;
@@ -41,9 +43,9 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
     public ILoggingBuilder Logging => _logging;
     public IKubernetesBuilder Kubernetes => _kubernetes;
 
-    public IControllerDataSource DataSource { get; set; } = new ControllerDatasource();
+    public IControllerDataSource DataSource { get; set; }
 
-    public List<object> Metadata { get; } = [];
+    public List<object> Metadata => _metadata;
 
     public IOperatorApplication Build()
     {

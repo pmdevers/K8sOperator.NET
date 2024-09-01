@@ -1,10 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Security.AccessControl;
+﻿using K8sOperator.NET.Generator;
 
 namespace K8sOperator.NET.Builder;
-internal class ControllerDatasource : IControllerDataSource
+internal class ControllerDatasource(List<object> metadata) : IControllerDataSource
 {
     private readonly List<ControllerEntry> _entries = [];
+    public IReadOnlyList<object> Metadata => metadata;
 
     public IControllerConventionBuilder AddController(Type controllerType)
     {
