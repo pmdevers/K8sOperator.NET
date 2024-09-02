@@ -10,7 +10,8 @@ internal static class CustomResourceGenerator
 
     public static IKubernetesObject Generated(Type resourceType, IReadOnlyList<object> metadata)
     {
-        var meta = new MetaData(metadata);
+        var meta = metadata.OfType<KubernetesEntityAttribute>().First();
+        var scope = metadata.OfType<EntityScopeMetadata>().FirstOrDefault()?.Scope ?? EntityScope.Namespaced;
 
         var crd = new V1CustomResourceDefinition(new()).Initialize();
 
@@ -20,14 +21,14 @@ internal static class CustomResourceGenerator
         crd.Spec.Names = new()
         {
             Kind = meta.Kind,
-            ListKind = meta.KindList,
-            Singular = meta.SigularName,
+            ListKind = $"{meta.Kind}List",
+            Singular = meta.Kind.ToLower(),
             Plural = meta.PluralName
         };
 
-        crd.Spec.Scope = meta.Scope;
+        crd.Spec.Scope = scope.ToString();
 
-        var version = new V1CustomResourceDefinitionVersion(meta.Version, true, true);
+        var version = new V1CustomResourceDefinitionVersion(meta.ApiVersion, true, true);
 
         if (resourceType.GetProperty("Status") != null)
         {

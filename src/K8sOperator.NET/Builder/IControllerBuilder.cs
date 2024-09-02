@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using k8s.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Reflection;
 
 namespace K8sOperator.NET.Builder;
 
@@ -23,8 +25,22 @@ internal class ControllerBuilder(IServiceProvider serviceProvider, Type controll
 
     public IController Build()
     {
-        return (IController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType);
+        var controller = (IController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType);
+        var attribute = controller.ResourceType.GetCustomAttribute<KubernetesEntityAttribute>();
+
+        if (attribute is not null)
+        {
+            Metadata.Add(attribute);
+        }
+
+        return controller;
     }
+}
+
+public class ControllerBuilderResult
+{
+    public IController Controller { get; set; }
+    public List<object> Metadata { get; set;}
 }
 
 internal class EventWatcherBuilder(IServiceProvider serviceProvider, IController controller, IReadOnlyList<object> metadata)

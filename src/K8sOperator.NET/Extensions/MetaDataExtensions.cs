@@ -1,4 +1,5 @@
-﻿using K8sOperator.NET.Builder;
+﻿using k8s.Models;
+using K8sOperator.NET.Builder;
 using K8sOperator.NET.Metadata;
 
 namespace K8sOperator.NET.Extensions;
@@ -28,53 +29,25 @@ public static class MetadataExtensions
     /// <typeparam name="TBuilder"></typeparam>
     /// <param name="builder"></param>
     /// <param name="group"></param>
-    /// <returns></returns>
-    public static TBuilder WithGroup<TBuilder>(this TBuilder builder, string group)
-        where TBuilder : IControllerConventionBuilder
-    {
-        builder.WithSingle(new GroupMetadata(group));
-        return builder;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TBuilder"></typeparam>
-    /// <param name="builder"></param>
-    /// <param name="kind"></param>
-    /// <returns></returns>
-    public static TBuilder WithKind<TBuilder>(this TBuilder builder, string kind)
-        where TBuilder : IControllerConventionBuilder
-    {
-        builder.WithSingle(new KindMetadata(kind));
-        return builder;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TBuilder"></typeparam>
-    /// <param name="builder"></param>
     /// <param name="version"></param>
-    /// <returns></returns>
-    public static TBuilder WithVersion<TBuilder>(this TBuilder builder, string version)
-        where TBuilder : IControllerConventionBuilder
-    {
-        builder.WithSingle(new ApiVersionMetadata(version));
-        return builder;
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TBuilder"></typeparam>
-    /// <param name="builder"></param>
+    /// <param name="kind"></param>
     /// <param name="pluralName"></param>
     /// <returns></returns>
-    public static TBuilder WithPluralName<TBuilder>(this TBuilder builder, string pluralName)
+    public static TBuilder WithGroup<TBuilder>(this TBuilder builder, 
+        string group = "",
+        string version = "v1",
+        string kind = "",
+        string pluralName = ""
+        )
         where TBuilder : IControllerConventionBuilder
     {
-        builder.WithSingle(new PluralNameMetadata(pluralName));
+        builder.WithSingle(new KubernetesEntityAttribute()
+        {
+            Group = group,
+            ApiVersion = version,
+            Kind = kind,
+            PluralName = pluralName
+        });
         return builder;
     }
 

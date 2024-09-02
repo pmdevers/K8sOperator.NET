@@ -1,9 +1,8 @@
 ﻿using K8sOperator.NET;
 using K8sOperator.NET.Builder;
-using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Metadata;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace K8sOperator.NET.Extensions;
 
 /// <summary>
 /// 

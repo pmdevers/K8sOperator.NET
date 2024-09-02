@@ -7,17 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Models\**" />
-    <EmbeddedResource Remove="Models\**" />
-    <None Remove="Models\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="EventWatcherFactory.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="Models\CustomResource.cs" />
+    <Compile Remove="Generator\DeploymentBuilder.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -30,10 +30,7 @@ internal class EventWatcher<T>(
     ILoggerFactory loggerfactory) : IEventWatcher
     where T: CustomResource
 {
-    private string Group => metadata.OfType<IGroupMetadata>().First().Group;
-    private string ApiVersion => metadata.OfType<IApiVersionMetadata>().First().ApiVersion;
-    private string Kind => metadata.OfType<IKindMetadata>().First().Kind;
-    private string PluralName => metadata.OfType<IPluralNameMetadata>().First().PluralName;
+    private KubernetesEntityAttribute Crd => metadata.OfType<KubernetesEntityAttribute>().First();
     private string Namespace => metadata.OfType<IWatchNamespaceMetadata>().FirstOrDefault()?.Namespace ?? "default";
     private string LabelSelector => metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
     private string Finalizer => metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
@@ -52,10 +49,10 @@ internal class EventWatcher<T>(
         _isRunning = true;
 
         var response = client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
-            Group,
-            ApiVersion,
+            Crd.Group,
+            Crd.ApiVersion,
             Namespace,
-            PluralName,
+            Crd.PluralName,
             watch: true,
             allowWatchBookmarks: true,
             labelSelector: LabelSelector,
@@ -63,14 +60,14 @@ internal class EventWatcher<T>(
             cancellationToken: cancellationToken
         );
 
-        logger.BeginWatch(Namespace, Kind, LabelSelector);
+        logger.BeginWatch(Namespace, Crd.PluralName, LabelSelector);
 
         await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
         {
             OnEvent(type, item);
         }
 
-        logger.EndWatch(Namespace, PluralName, LabelSelector);
+        logger.EndWatch(Namespace, Crd.PluralName, LabelSelector);
     }
 
     private void OnEvent(WatchEventType eventType, T customResource)
@@ -206,10 +203,10 @@ internal class EventWatcher<T>(
         // Replace the resource
         var result = await client.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
             resource,
-            Group,
-            ApiVersion,
+            Crd.Group,
+            Crd.ApiVersion,
             resource.Metadata.NamespaceProperty,
-            PluralName,
+            Crd.PluralName,
             resource.Metadata.Name,
             cancellationToken: cancellationToken
         ).ConfigureAwait(false);
