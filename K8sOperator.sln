@@ -30,7 +30,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "K8sOperator.NET", "src\K8sO
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{ED5FF81E-F3EA-4BEF-9B72-31A24F9386E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleOperator", "examples\SimpleOperator\SimpleOperator.csproj", "{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleOperator", "examples\SimpleOperator\SimpleOperator.csproj", "{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,20 +1,26 @@
+using K8sOperator.NET;
 using K8sOperator.NET.Extensions;
+using K8sOperator.NET.Generator.Builders;
 using SimpleOperator.Projects;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = OperatorHost.CreateOperatorApplicationBuilder(args);
 
-builder.Logging.SetMinimumLevel(LogLevel.Debug);
+//builder.WithName("sonarcube-operator");
+//builder.WithImage(
+//    repository: "pmdevers", 
+//    name: "sonarcube-operator", 
+//    tag: "fc5d6122d6ff1057062e368214ddf4cfe34f5d6d"
+//);
 
-builder.Services.AddK8sOperators(o => {
-    o.WithGroup("sonarcloud.io");
-    o.WithVersion("v1alpha1");
-    });
+builder.AddController<TestItemController>()
+    .WithFinalizer("testitem.local.finalizer"); 
+
+builder.AddController<ProjectController>()
+    .WithFinalizer("project.local.finalizer");
 
 var app = builder.Build();
 
-app.MapController<ProjectController>()
-    .WithKind("Project")
-    .WithPluralName("projects")
-    .WithFinalizer("project.local.finalizer");
-
 await app.RunAsync();
+
+
+

@@ -1,8 +1,11 @@
-﻿using K8sOperator.NET;
+﻿using k8s;
+using k8s.Models;
+using K8sOperator.NET;
 
 namespace SimpleOperator.Projects;
 
-public class ProjectController(ILoggerFactory logger) : Controller<Project>
+
+public class ProjectController(IKubernetes client, ILoggerFactory logger) : Controller<Project>
 {
     private readonly ILogger _logger = logger.CreateLogger<ProjectController>();
 

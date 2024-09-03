@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Helpers;
+using System.Xml.Linq;
 
 namespace K8sOperator.NET.Metadata;
 
@@ -16,7 +17,6 @@ public interface ILabelSelectorMetadata
 internal class LabelSelectorMetadata(string labelSelector) : ILabelSelectorMetadata
 {
     public string LabelSelector => labelSelector;
-
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(LabelSelector), LabelSelector);
 }

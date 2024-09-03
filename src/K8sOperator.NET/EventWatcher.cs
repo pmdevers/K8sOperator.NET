@@ -4,7 +4,6 @@ using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Models;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 
 namespace K8sOperator.NET;
 
@@ -13,6 +12,9 @@ namespace K8sOperator.NET;
 /// </summary>
 public interface IEventWatcher
 {
+    public IReadOnlyList<object> Metadata { get; }
+    public IController Controller { get; }
+
     /// <summary>
     /// 
     /// </summary>
@@ -28,46 +30,44 @@ internal class EventWatcher<T>(
     ILoggerFactory loggerfactory) : IEventWatcher
     where T: CustomResource
 {
-    private string Group => metadata.OfType<IGroupMetadata>().First().Group;
-    private string ApiVersion => metadata.OfType<IApiVersionMetadata>().First().ApiVersion;
-    private string Kind => metadata.OfType<IKindMetadata>().First().Kind;
-    private string PluralName => metadata.OfType<IPluralNameMetadata>().First().PluralName;
+    private KubernetesEntityAttribute Crd => metadata.OfType<KubernetesEntityAttribute>().First();
     private string Namespace => metadata.OfType<IWatchNamespaceMetadata>().FirstOrDefault()?.Namespace ?? "default";
     private string LabelSelector => metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
     private string Finalizer => metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
 
     private readonly ChangeTracker _changeTracker = new();
-
-    
     private ILogger logger => loggerfactory.CreateLogger("watcher");
-
-    
     private bool _isRunning;
-    
     private CancellationToken _cancellationToken = CancellationToken.None;
+    
+    public IReadOnlyList<object> Metadata => metadata;
+    public IController Controller => controller;
 
     public async Task Start(CancellationToken cancellationToken)
     {
         _cancellationToken = cancellationToken;
         _isRunning = true;
 
-        var response = await client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
-            Group,
-            ApiVersion,
+        var response = client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
+            Crd.Group,
+            Crd.ApiVersion,
             Namespace,
-            PluralName,
+            Crd.PluralName,
             watch: true,
             allowWatchBookmarks: true,
             labelSelector: LabelSelector,
             timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
             cancellationToken: cancellationToken
-        ).ConfigureAwait(false)!;
-        logger.BeginWatch(Namespace, Kind, LabelSelector);
+        );
 
-        using var _ = response.Watch<T, object>(OnEvent, OnError, OnClosed);
-        await WaitOneAsync(cancellationToken.WaitHandle);
+        logger.BeginWatch(Namespace, Crd.PluralName, LabelSelector);
 
-        logger.EndWatch(Namespace, PluralName, LabelSelector);
+        await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
+        {
+            OnEvent(type, item);
+        }
+
+        logger.EndWatch(Namespace, Crd.PluralName, LabelSelector);
     }
 
     private void OnEvent(WatchEventType eventType, T customResource)
@@ -203,10 +203,10 @@ internal class EventWatcher<T>(
         // Replace the resource
         var result = await client.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
             resource,
-            Group,
-            ApiVersion,
+            Crd.Group,
+            Crd.ApiVersion,
             resource.Metadata.NamespaceProperty,
-            PluralName,
+            Crd.PluralName,
             resource.Metadata.Name,
             cancellationToken: cancellationToken
         ).ConfigureAwait(false);
@@ -240,56 +240,12 @@ internal class EventWatcher<T>(
         logger.EndAddOrModify(resource);
     }
 
-
-    private void OnClosed()
-    {
-        logger.LogError("Watcher closed.");
-
-        if (_isRunning)
-        {
-            throw new InvalidOperationException();
-        }
-    }
-
     private void OnError(Exception exception)
     {
         if (_isRunning)
         {
             logger.LogError(exception, "Watcher error");
         }
-    }
-
-    private static Task<bool> WaitOneAsync(WaitHandle waitHandle, int millisecondsTimeOutInterval = Timeout.Infinite)
-    {
-        ArgumentNullException.ThrowIfNull(waitHandle);
-
-        var tcs = new TaskCompletionSource<bool>();
-
-        var rwh = ThreadPool.RegisterWaitForSingleObject(
-            waitHandle,
-            callBack: (_, timedOut) => { tcs.TrySetResult(!timedOut); },
-            state: null,
-            millisecondsTimeOutInterval: millisecondsTimeOutInterval,
-            executeOnlyOnce: true
-        );
-
-        var task = tcs.Task;
-
-        task.ContinueWith(t =>
-        {
-            rwh.Unregister(waitObject: null);
-            try
-            {
-                return t.Result;
-            }
-            catch
-            {
-                return false;
-                throw;
-            }
-        });
-
-        return task;
     }
 }
 

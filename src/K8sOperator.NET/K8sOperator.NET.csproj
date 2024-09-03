@@ -7,10 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Generator\DeploymentBuilder.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotMake.CommandLine" />
     <PackageReference Include="KubernetesClient" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>
