@@ -2,7 +2,8 @@
 using k8s.Models;
 
 namespace K8sOperator.NET.Generator.Builders;
-public class CustomResourceDefinitionBuilder : KubernetesObjectBuilderWithMetaData<V1CustomResourceDefinition>
+
+internal class CustomResourceDefinitionBuilder : KubernetesObjectBuilderWithMetaData<V1CustomResourceDefinition>
 {
     public override V1CustomResourceDefinition Build()
     {
@@ -10,12 +11,5 @@ public class CustomResourceDefinitionBuilder : KubernetesObjectBuilderWithMetaDa
         crd.Initialize();
         return crd;
     }
-}
-
-
-public enum Scope
-{
-    Cluster,
-    Namespaced
 }
 

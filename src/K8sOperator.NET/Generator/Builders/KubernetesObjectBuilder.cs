@@ -1,7 +1,4 @@
-﻿using k8s;
-using k8s.Models;
-
-namespace K8sOperator.NET.Generator.Builders;
+﻿namespace K8sOperator.NET.Generator.Builders;
 
 /// <summary>
 /// Describes a Generic Kubernetes Resource Builder
@@ -22,11 +19,7 @@ public interface IKubernetesObjectBuilder<out T>
     T Build();
 }
 
-/// <summary>
-/// Implementation of a generic KubernetesObjectBuilder
-/// </summary>
-/// <typeparam name="T">The kubernetes object type.</typeparam>
-public class KubernetesObjectBuilder<T> : IKubernetesObjectBuilder<T>
+internal class KubernetesObjectBuilder<T> : IKubernetesObjectBuilder<T>
     where T : class, new()
 {
     private readonly List<Action<T>> _actions = [];
@@ -46,36 +39,5 @@ public class KubernetesObjectBuilder<T> : IKubernetesObjectBuilder<T>
         }
 
         return o;
-    }
-}
-
-public interface IKubernetesObjectBuilderWithMetadata<T> : IKubernetesObjectBuilder<T>
-    where T : IMetadata<V1ObjectMeta>
-{
-
-}
-
-/// <summary>
-/// Implementation of a generic KubernetesObjectBuilder
-/// </summary>
-/// <typeparam name="T">The kubernetes object type.</typeparam>
-public class KubernetesObjectBuilderWithMetaData<T> 
-    : KubernetesObjectBuilder<T>, IKubernetesObjectBuilderWithMetadata<T>
-    where T : class, IMetadata<V1ObjectMeta>, new()
-{
-    public KubernetesObjectBuilderWithMetaData()
-    {
-        Add(x=>x.Metadata = new V1ObjectMeta());
-    }
-}
-
-public static class KubernetesObjectBuilderWithMetadataExtentions
-{
-    public static TBuilder WithName<TBuilder, T>(TBuilder builder, string name)
-        where TBuilder : IKubernetesObjectBuilderWithMetadata<T>
-        where T : IKubernetesObject<V1ObjectMeta>
-    {
-        builder.Add(x => x.Metadata.Name = name);
-        return builder;
     }
 }

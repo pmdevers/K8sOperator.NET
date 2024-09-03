@@ -4,12 +4,12 @@ using System.Xml.Linq;
 namespace K8sOperator.NET.Metadata;
 
 /// <summary>
-/// 
+/// Interface representing metadata for watching a specific Kubernetes namespace.
 /// </summary>
 public interface IWatchNamespaceMetadata
 {
     /// <summary>
-    /// The namespace to watch.
+    /// Gets the namespace to watch for Kubernetes resources.
     /// </summary>
     public string Namespace { get; }
 }

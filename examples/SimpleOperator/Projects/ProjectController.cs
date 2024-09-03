@@ -1,6 +1,4 @@
-﻿using k8s;
-using k8s.Models;
-using K8sOperator.NET;
+﻿using K8sOperator.NET;
 
 namespace SimpleOperator.Projects;
 

@@ -2,13 +2,13 @@
 
 namespace K8sOperator.NET.Metadata;
 
-internal interface IDescripptionMetadata
+internal interface IDescriptionMetadata
 {
     string Description { get; }
 }
 
 
-internal class DescriptionMetadata(string description) : IDescripptionMetadata
+internal class DescriptionMetadata(string description) : IDescriptionMetadata
 {
     public string Description => description;
     public override string ToString()

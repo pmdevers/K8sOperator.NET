@@ -8,18 +8,25 @@ using Microsoft.Extensions.Logging;
 namespace K8sOperator.NET;
 
 /// <summary>
-/// Desccibes an EventWatcher
+/// Interface representing an event watcher that monitors Kubernetes events and interacts with a controller.
 /// </summary>
 public interface IEventWatcher
 {
+    /// <summary>
+    /// Gets the metadata associated with the event watcher.
+    /// </summary>
     public IReadOnlyList<object> Metadata { get; }
+
+    /// <summary>
+    /// Gets the controller that processes events captured by the event watcher.
+    /// </summary>
     public IController Controller { get; }
 
     /// <summary>
-    /// 
+    /// Starts the event watcher, monitoring for events and processing them using the controller.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     Task Start(CancellationToken cancellationToken);
 }
 

@@ -1,20 +1,10 @@
-﻿using K8sOperator.NET.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using K8sOperator.NET.Generator.Builders;
+using K8sOperator.NET.Helpers;
 
 namespace K8sOperator.NET.Metadata;
 internal interface IEntityScopeMetadata
 {
     EntityScope Scope { get; }
-}
-
-public enum EntityScope
-{
-    Namespaced = 0,
-    Cluster = 1
 }
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]

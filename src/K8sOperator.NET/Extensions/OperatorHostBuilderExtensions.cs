@@ -5,10 +5,16 @@ using K8sOperator.NET.Metadata;
 namespace K8sOperator.NET.Extensions;
 
 /// <summary>
-/// 
+/// Provides extension methods for configuring an operator host.
 /// </summary>
 public static class OperatorHostBuilderExtensions
 {
+    /// <summary>
+    /// Sets the name of the operator application.
+    /// </summary>
+    /// <param name="builder">The operator application builder.</param>
+    /// <param name="name">The name of the operator.</param>
+    /// <returns>The configured operator application builder.</returns>
     public static IOperatorApplicationBuilder WithName(this IOperatorApplicationBuilder builder,
         string name
         )
@@ -18,6 +24,15 @@ public static class OperatorHostBuilderExtensions
         return builder;
     }
 
+    /// <summary>
+    /// Sets the Docker image information for the operator application.
+    /// </summary>
+    /// <param name="builder">The operator application builder.</param>
+    /// <param name="registery">The Docker registry. Defaults to "ghcr.io".</param>
+    /// <param name="repository">The Docker repository.</param>
+    /// <param name="name">The name of the Docker image.</param>
+    /// <param name="tag">The tag of the Docker image.</param>
+    /// <returns>The configured operator application builder.</returns>
     public static IOperatorApplicationBuilder WithImage(this IOperatorApplicationBuilder builder,
         string registery = "ghcr.io",
         string repository = "",
@@ -31,21 +46,21 @@ public static class OperatorHostBuilderExtensions
     }
 
     /// <summary>
-    /// 
+    /// Adds a controller to the operator application.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="builder"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type of the controller to add.</typeparam>
+    /// <param name="builder">The operator application builder.</param>
+    /// <returns>The controller convention builder for further configuration.</returns>
     public static IControllerConventionBuilder AddController<T>(this IOperatorApplicationBuilder builder)
         where T : IController
         => builder.AddController(typeof(T));
 
     /// <summary>
-    /// 
+    /// Adds a controller to the operator application using the specified type.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="controllerType"></param>
-    /// <returns></returns>
+    /// <param name="builder">The operator application builder.</param>
+    /// <param name="controllerType">The type of the controller to add.</param>
+    /// <returns>The controller convention builder for further configuration.</returns>
     public static IControllerConventionBuilder AddController(this IOperatorApplicationBuilder builder, Type controllerType)
     {
         return builder

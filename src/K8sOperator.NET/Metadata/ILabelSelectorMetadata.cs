@@ -4,12 +4,12 @@ using System.Xml.Linq;
 namespace K8sOperator.NET.Metadata;
 
 /// <summary>
-/// 
+/// Interface representing metadata for a label selector used to filter Kubernetes resources.
 /// </summary>
 public interface ILabelSelectorMetadata
 {
     /// <summary>
-    /// The namespace to watch.
+    /// Gets the label selector string used to filter resources based on labels.
     /// </summary>
     public string LabelSelector { get; }
 }
