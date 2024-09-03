@@ -6,11 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Company>pmdevers</Company>
 
-    <PackageVersion>2.0.0</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="K8sOperator.NET" Version="0.0.1-alpha0002" />
+    <PackageReference Include="K8sOperator.NET" Version="0.0.1-alpha0003" />
   </ItemGroup>
 
  

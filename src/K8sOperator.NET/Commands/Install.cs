@@ -45,7 +45,7 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
                  plural: group.PluralName,
                  singular: group.Kind.ToLower()
               )
-              .WithScope(Scope.Namespaced)
+              .WithScope(EntityScope.Namespaced)
               .WithVersion(
                     group.ApiVersion, 
                     schema=> {
@@ -62,7 +62,7 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
         var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name)!;
         var image = metadata.TryGetValue<DockerImageAttribute, string>(x => x.GetImage())!;
 
-        var deployment = new DeploymentBuilder();
+        var deployment = DeploymentBuilder.Create();
         
         deployment.WithName($"{name}-deployment")
             .WithLabel("operator-deployment", name)
@@ -158,5 +158,6 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
 
         return clusterrole.Build();
     }
+
 }
 

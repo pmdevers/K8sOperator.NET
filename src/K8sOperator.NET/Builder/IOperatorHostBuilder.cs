@@ -3,20 +3,45 @@ using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Diagnostics;
 using System.Reflection;
 
-
 namespace K8sOperator.NET.Builder;
+
+/// <summary>
+/// Interface for building an Operator Application.
+/// </summary>
 public interface IOperatorApplicationBuilder
 {
+    /// <summary>
+    /// Gets the configuration settings for the application.
+    /// </summary>
     IConfiguration Configuration { get; }
+
+    /// <summary>
+    /// Gets the collection of services used by the application.
+    /// </summary>
     IServiceCollection Services { get; }
+
+    /// <summary>
+    /// Gets the logging builder for configuring logging services.
+    /// </summary>
     ILoggingBuilder Logging { get; }
+
+    /// <summary>
+    /// Gets the data source for the controller, providing access to the Kubernetes resources.
+    /// </summary>
     IControllerDataSource DataSource { get; }
 
+    /// <summary>
+    /// Gets the list of metadata associated with the application.
+    /// </summary>
     List<object> Metadata { get; }
-    
+
+    /// <summary>
+    /// Builds the Operator Application based on the configured settings and services.
+    /// </summary>
+    /// <returns>An instance of <see cref="IOperatorApplication"/> representing the built application.</returns>
+
     IOperatorApplication Build();
 }
 

@@ -1,21 +1,15 @@
 ﻿using k8s;
-using K8sOperator.NET.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace K8sOperator.NET.Extensions;
+
 /// <summary>
-/// 
+/// Extension methods for Kubenetes
 /// </summary>
 public static class KubernetesBuilderExtensions
 {
     /// <summary>
-    /// 
+    /// Adds Kubernetes client to the servicecollection
     /// </summary>
     /// <param name="services"></param>
     /// <returns></returns>

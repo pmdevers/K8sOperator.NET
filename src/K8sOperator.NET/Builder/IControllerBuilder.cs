@@ -1,17 +1,16 @@
 ﻿using k8s.Models;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Reflection;
 
 namespace K8sOperator.NET.Builder;
 
 /// <summary>
-/// 
+/// Interface for building an Operator Controller.
 /// </summary>
 public interface IControllerBuilder
 {
     /// <summary>
-    /// 
+    /// Gets the list of metadata associated with the controller.
     /// </summary>
     List<object> Metadata { get; }
 }
