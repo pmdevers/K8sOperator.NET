@@ -4,7 +4,8 @@ public interface IOperatorNameMetadata
     string Name { get; }
 }
 
-internal class OperatorNameMetadata(string name) : IOperatorNameMetadata
+[AttributeUsage(AttributeTargets.Assembly)]
+public class OperatorNameAttribute(string name) : Attribute, IOperatorNameMetadata
 {
     public string Name => name;
 }

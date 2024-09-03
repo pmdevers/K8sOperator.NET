@@ -13,8 +13,8 @@ public static class OperatorHostBuilderExtensions
         string name
         )
     {
-        builder.Metadata.RemoveAll(x => x.GetType() == typeof(OperatorNameMetadata));
-        builder.Metadata.Add(new OperatorNameMetadata(name.ToLowerInvariant()));
+        builder.Metadata.RemoveAll(x => x.GetType() == typeof(OperatorNameAttribute));
+        builder.Metadata.Add(new OperatorNameAttribute(name.ToLowerInvariant()));
         return builder;
     }
 
@@ -25,8 +25,8 @@ public static class OperatorHostBuilderExtensions
         string tag = ""
         )
     {
-        builder.Metadata.RemoveAll(x => x.GetType() == typeof(ImageMetadata));
-        builder.Metadata.Add(new ImageMetadata(registery, repository, name, tag));
+        builder.Metadata.RemoveAll(x => x.GetType() == typeof(DockerImageAttribute));
+        builder.Metadata.Add(new DockerImageAttribute(registery, repository, name, tag));
         return builder;
     }
 

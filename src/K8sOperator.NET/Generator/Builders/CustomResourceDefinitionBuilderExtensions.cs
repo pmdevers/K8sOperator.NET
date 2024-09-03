@@ -67,6 +67,20 @@ public static class CustomResourceDefinitionBuilderExtensions {
         });
         return builder;
     }
+    public static TBuilder WithServed<TBuilder>(this TBuilder builder, bool served)
+        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
+    {
+        builder.Add(x => x.Served = served);
+        return builder;
+    }
+
+    public static TBuilder WithStorage<TBuilder>(this TBuilder builder, bool storage)
+        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
+    {
+        builder.Add(x => x.Storage = storage);
+        return builder;
+    }
+
     public static TBuilder WithSchemaForType<TBuilder>(this TBuilder builder, Type resourceType)
         where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
     {
@@ -90,6 +104,7 @@ public static class CustomResourceDefinitionBuilderExtensions {
         return builder;
     }
 
+    
     public static TBuilder WithSchema<TBuilder>(this TBuilder builder, Action<IKubernetesObjectBuilder<V1JSONSchemaProps>> schema)
         where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
     {
