@@ -1,7 +1,10 @@
 ﻿using K8sOperator.NET.Extensions;
+using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Reflection;
 
 
 namespace K8sOperator.NET.Builder;
@@ -34,8 +37,25 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         ConfigureConfiguration();
         ConfigureLogging();
         ConfigureKubernetes();
+        ConfigureMetadata();
         _args = args;
+
         DataSource = new ControllerDatasource(_metadata);
+    }
+
+    private void ConfigureMetadata()
+    {
+        var company = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? "";
+        var product = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyProductAttribute>()?.Product ?? "";
+        var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "1.0.0";
+
+        _metadata.Add(new OperatorNameMetadata(product.ToLower()));
+        _metadata.Add(new ImageMetadata(
+            registery: "ghcr.io",
+            repository: company.ToLower(),
+            imageName: product.ToLower(),
+            tag: version.ToLower()
+        ));
     }
 
     public IConfiguration Configuration => _configurationManager;

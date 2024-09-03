@@ -6,7 +6,7 @@ namespace K8sOperator.NET.Generator.Builders;
 public static class KubernetesObjectBuilderExtentions
 {
     public static IKubernetesObjectBuilder<T> WithName<T>(this IKubernetesObjectBuilder<T> builder, string name)
-        where T : IKubernetesObject<V1ObjectMeta>
+        where T : IMetadata<V1ObjectMeta>
     {
         builder.Add(x => {
             x.Metadata.Name = name;
@@ -15,7 +15,7 @@ public static class KubernetesObjectBuilderExtentions
     }
 
     public static IKubernetesObjectBuilder<T> WithLabel<T>(this IKubernetesObjectBuilder<T> builder, string key, string value)
-        where T : IKubernetesObject<V1ObjectMeta>
+        where T : IMetadata<V1ObjectMeta>
     {
         builder.Add(x => {
             x.Metadata.Labels ??= new Dictionary<string, string>();

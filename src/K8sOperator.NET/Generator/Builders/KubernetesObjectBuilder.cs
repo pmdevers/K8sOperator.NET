@@ -36,7 +36,7 @@ public class KubernetesObjectBuilder<T> : IKubernetesObjectBuilder<T>
         _actions.Add(action);
     }
 
-    public T Build()
+    public virtual T Build()
     {
         var o = new T();
 
@@ -50,7 +50,7 @@ public class KubernetesObjectBuilder<T> : IKubernetesObjectBuilder<T>
 }
 
 public interface IKubernetesObjectBuilderWithMetadata<T> : IKubernetesObjectBuilder<T>
-    where T : IKubernetesObject<V1ObjectMeta>
+    where T : IMetadata<V1ObjectMeta>
 {
 
 }
@@ -61,7 +61,7 @@ public interface IKubernetesObjectBuilderWithMetadata<T> : IKubernetesObjectBuil
 /// <typeparam name="T">The kubernetes object type.</typeparam>
 public class KubernetesObjectBuilderWithMetaData<T> 
     : KubernetesObjectBuilder<T>, IKubernetesObjectBuilderWithMetadata<T>
-    where T : class, IKubernetesObject<V1ObjectMeta>, new()
+    where T : class, IMetadata<V1ObjectMeta>, new()
 {
     public KubernetesObjectBuilderWithMetaData()
     {
