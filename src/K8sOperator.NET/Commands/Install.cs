@@ -31,7 +31,7 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
         await Task.CompletedTask;
     }
 
-    private V1CustomResourceDefinition CreateCustomResourceDefinition(IEventWatcher item)
+    private static V1CustomResourceDefinition CreateCustomResourceDefinition(IEventWatcher item)
     {
         var group = item.Metadata.OfType<KubernetesEntityAttribute>().First();
 
@@ -110,7 +110,7 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
         return deployment.Build();
     }
 
-    private V1ClusterRoleBinding CreateClusterRoleBinding(IReadOnlyList<object> metadata)
+    private static V1ClusterRoleBinding CreateClusterRoleBinding(IReadOnlyList<object> metadata)
     {
         var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name);
 

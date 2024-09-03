@@ -60,8 +60,8 @@ public static class DeploymentBuilderExtensions
     /// <param name="matchLabels">An action to configure match labels.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithSelector<TBuilder>(this TBuilder builder, 
-        Action<IList<V1LabelSelectorRequirement>> matchExpressions = null,
-        Action<Dictionary<string, string>> matchLabels = null)
+        Action<IList<V1LabelSelectorRequirement>>? matchExpressions = null,
+        Action<Dictionary<string, string>>? matchLabels = null)
         where TBuilder : IKubernetesObjectBuilder<V1DeploymentSpec>
     {
         var labels = new Dictionary<string, string>();
@@ -105,22 +105,7 @@ public static class DeploymentBuilderExtensions
         return podBuilder;
     }
 
-    /// <summary>
-    /// Configures the security context for the pod.
-    /// </summary>
-    /// <typeparam name="TBuilder">The type of the builder.</typeparam>
-    /// <param name="builder">The builder instance.</param>
-    /// <param name="securityContext">An action to configure the security context.</param>
-    /// <returns>The configured builder.</returns>
-    public static TBuilder WithSecurityContext<TBuilder>(this TBuilder builder, Action<IKubernetesObjectBuilder<V1PodSecurityContext>> securityContext)
-        where TBuilder : IKubernetesObjectBuilder<V1PodSpec>
-    {
-        var b = new KubernetesObjectBuilder<V1PodSecurityContext>();
-        securityContext(b);
-
-        builder.Add(x=>x.SecurityContext = b.Build());
-        return builder;
-    }
+    
 
     /// <summary>
     /// Adds a container to the pod spec.
@@ -271,6 +256,23 @@ public static class DeploymentBuilderExtensions
         securityContext(b);
 
         builder.Add(x=>x.SecurityContext = b.Build());
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures the security context for the pod.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder.</typeparam>
+    /// <param name="builder">The builder instance.</param>
+    /// <param name="securityContext">An action to configure the security context.</param>
+    /// <returns>The configured builder.</returns>
+    public static TBuilder WithSecurityContext<TBuilder>(this TBuilder builder, Action<IKubernetesObjectBuilder<V1PodSecurityContext>> securityContext)
+        where TBuilder : IKubernetesObjectBuilder<V1PodSpec>
+    {
+        var b = new KubernetesObjectBuilder<V1PodSecurityContext>();
+        securityContext(b);
+
+        builder.Add(x => x.SecurityContext = b.Build());
         return builder;
     }
 

@@ -36,12 +36,6 @@ internal class ControllerBuilder(IServiceProvider serviceProvider, Type controll
     }
 }
 
-public class ControllerBuilderResult
-{
-    public IController Controller { get; set; }
-    public List<object> Metadata { get; set;}
-}
-
 internal class EventWatcherBuilder(IServiceProvider serviceProvider, IController controller, IReadOnlyList<object> metadata)
 {
     public IEventWatcher Build()

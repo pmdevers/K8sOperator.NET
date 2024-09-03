@@ -156,8 +156,8 @@ public static class CustomResourceDefinitionBuilderExtensions {
 
         s.OfType("object");
 
-        var status = resourceType.GetProperty("Status");
-        var spec = resourceType.GetProperty("Spec");
+        var status = resourceType.GetProperty("Status")!;
+        var spec = resourceType.GetProperty("Spec")!;
 
         s.WithProperty("status", sub => {
             sub.ObjectType(status.PropertyType);
