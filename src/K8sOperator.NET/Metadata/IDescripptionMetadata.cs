@@ -2,8 +2,14 @@
 
 namespace K8sOperator.NET.Metadata;
 
-internal interface IDescriptionMetadata
+/// <summary>
+/// Represents metadata that includes a description.
+/// </summary>
+public interface IDescriptionMetadata
 {
+    /// <summary>
+    /// Gets the description associated with the metadata.
+    /// </summary>
     string Description { get; }
 }
 

@@ -1,8 +1,15 @@
 ﻿using K8sOperator.NET.Helpers;
 
 namespace K8sOperator.NET.Metadata;
-internal interface IFinalizerMetadata
+
+/// <summary>
+/// Represents metadata for a Kubernetes finalizer.
+/// </summary>
+public interface IFinalizerMetadata
 {
+    /// <summary>
+    /// Gets the name of the finalizer.
+    /// </summary>
     string Name { get; }
 }
 

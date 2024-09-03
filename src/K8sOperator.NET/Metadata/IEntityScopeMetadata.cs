@@ -2,8 +2,15 @@
 using K8sOperator.NET.Helpers;
 
 namespace K8sOperator.NET.Metadata;
-internal interface IEntityScopeMetadata
+
+/// <summary>
+/// Represents metadata that includes the scope of an entity in Kubernetes.
+/// </summary>
+public interface IEntityScopeMetadata
 {
+    /// <summary>
+    /// Gets the scope of the entity, indicating whether it is namespaced or cluster-wide.
+    /// </summary>
     EntityScope Scope { get; }
 }
 
