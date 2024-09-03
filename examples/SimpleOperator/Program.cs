@@ -4,9 +4,6 @@ using SimpleOperator.Projects;
 
 var builder = OperatorHost.CreateOperatorApplicationBuilder(args);
 
-builder.WithName("simple-operator");
-builder.WithImage(repository: "pmdevers", name: "simple-operator", tag: "1.0.0");
-
 builder.AddController<TestItemController>()
     .WithFinalizer("testitem.local.finalizer"); 
 

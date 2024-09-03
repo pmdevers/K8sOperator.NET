@@ -5,11 +5,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <Company>pmdevers</Company>
-    <OperatorName>simple-operator</OperatorName>
+
+    <PackageVersion>2.0.0</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\K8sOperator.NET\K8sOperator.NET.csproj" />
+    <PackageReference Include="K8sOperator.NET" Version="0.0.1-alpha0002" />
   </ItemGroup>
 
  

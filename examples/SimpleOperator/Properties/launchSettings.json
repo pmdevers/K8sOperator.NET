@@ -2,7 +2,7 @@
     "profiles": {
         "Operator": {
             "commandName": "Project",
-            "commandLineArgs": "operator",
+            "commandLineArgs": "--operator",
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
@@ -12,7 +12,7 @@
         },
         "install": {
             "commandName": "Project",
-            "commandLineArgs": "install --export > simple-operator-system.yaml",
+            "commandLineArgs": "install > simple-operator-system.yaml",
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
