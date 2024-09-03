@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Generator\DeploymentBuilder.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="DotMake.CommandLine" />
     <PackageReference Include="KubernetesClient" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
@@ -19,4 +15,10 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include=".\Operator.targets">
+      <Pack>True</Pack>
+      <PackagePath>\build\$(ProjectName).targets</PackagePath>
+    </Content>
+  </ItemGroup>
 </Project>

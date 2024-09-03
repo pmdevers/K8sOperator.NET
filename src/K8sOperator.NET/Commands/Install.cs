@@ -9,6 +9,7 @@ using K8sOperator.NET.Metadata;
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace K8sOperator.NET.Commands;
 
@@ -29,7 +30,9 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
     {
         var watchers = dataSource.GetWatchers(serviceProvider);
         var clusterrole = CreateClusterRole(dataSource.Metadata, watchers);
+        var clusterrolebinding = CreateClusterRoleBinding(dataSource.Metadata);
         var deployment = CreateDeployment(dataSource.Metadata);
+
 
         foreach (var item in watchers)
         {
@@ -41,6 +44,8 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
 
         Console.WriteLine(KubernetesYaml.Serialize(clusterrole));
         Console.WriteLine("---");
+        Console.WriteLine(KubernetesYaml.Serialize(clusterrolebinding));
+        Console.WriteLine("---");
         Console.WriteLine(KubernetesYaml.Serialize(deployment));
 
         await Task.CompletedTask;
@@ -51,7 +56,7 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
         var group = item.Metadata.OfType<KubernetesEntityAttribute>().First();
 
         var crdBuilder = new CustomResourceDefinitionBuilder();
-        crdBuilder.WithName("testitems.sonarcloud.io")
+        crdBuilder.WithName($"{group.PluralName}.{group.Group}")
           .WithSpec()
               .WithGroup(group.Group)
               .WithNames(
@@ -63,15 +68,19 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
               .WithScope(Scope.Namespaced)
               .WithVersion(
                     group.ApiVersion, 
-                    schema=> schema.WithSchemaForType(item.Controller.ResourceType));
+                    schema=> {
+                        schema.WithSchemaForType(item.Controller.ResourceType);
+                        schema.WithServed(true);
+                        schema.WithStorage(true);
+                    });
 
         return crdBuilder.Build();
     }
 
     private static V1Deployment CreateDeployment(IReadOnlyList<object> metadata)
     {
-        var name = metadata.TryGetValue<OperatorNameMetadata, string>(x => x.Name)!;
-        var image = metadata.TryGetValue<ImageMetadata, string>(x => x.GetImage())!;
+        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name)!;
+        var image = metadata.TryGetValue<DockerImageAttribute, string>(x => x.GetImage())!;
 
         var deployment = new DeploymentBuilder();
         
@@ -85,10 +94,26 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
                 })
                 .WithTemplate()
                     .WithLabel("operator-deployment", name)
+                    
                     .WithPod()
+                        .WithSecurityContext(b =>
+                            b.Add(x => {
+                                x.RunAsNonRoot = true;
+                                x.SeccompProfile = new()
+                                {
+                                    Type = "RuntimeDefault"
+                                };
+                         }))
                         .WithTerminationGracePeriodSeconds(10)
                         .AddContainer()
                             .AddEnvFromObjectField("test", x => x.FieldPath = "metadata.namespace")
+                            .WithSecurityContext(x => { 
+                                x.AllowPrivilegeEscalation(false);
+                                x.RunAsRoot(); 
+                                x.RunAsUser(2024);
+                                x.RunAsGroup(2024);
+                                x.WithCapabilities(x => x.WithDrop("ALL"));
+                             })
                             .WithName(name)
                             .WithImage(image)
                             .WithResources(
@@ -105,9 +130,21 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
         return deployment.Build();
     }
 
+    private V1ClusterRoleBinding CreateClusterRoleBinding(IReadOnlyList<object> metadata)
+    {
+        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name);
+
+        var clusterrolebinding = new ClusterRoleBindingBuilder()
+            .WithName($"{name}-role-binding")
+            .WithRoleRef("rbac.authorization.k8s.io", "ClusterRole", $"{name}-role")
+            .WithSubject(kind: "ServiceAccount", name: "default", ns: "system");
+
+        return clusterrolebinding.Build();
+    }
+
     private static V1ClusterRole CreateClusterRole(IReadOnlyList<object> metadata, IEnumerable<IEventWatcher> watchers)
     {
-        var name = metadata.TryGetValue<OperatorNameMetadata, string>(x => x.Name);
+        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name);
 
         var clusterrole = new ClusterRoleBuilder()
                     .WithName($"{name}-role");

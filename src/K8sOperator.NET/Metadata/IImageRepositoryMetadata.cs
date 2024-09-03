@@ -14,7 +14,8 @@ public interface IImageMetadata
     string GetImage();
 }
 
-internal class ImageMetadata(string registery, string repository, string imageName, string tag) : IImageMetadata
+[AttributeUsage(AttributeTargets.Assembly)]
+public class DockerImageAttribute(string registery, string repository, string imageName, string tag) : Attribute, IImageMetadata
 {
     public string Registery => registery;
     public string Repository => repository;

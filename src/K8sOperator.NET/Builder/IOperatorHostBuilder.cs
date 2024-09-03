@@ -45,17 +45,16 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
 
     private void ConfigureMetadata()
     {
-        var company = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company ?? "";
-        var product = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyProductAttribute>()?.Product ?? "";
-        var version = Assembly.GetEntryAssembly()?.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version ?? "1.0.0";
+        
+        var operatorName = Assembly.GetEntryAssembly()?.GetCustomAttribute<OperatorNameAttribute>()
+            ?? new OperatorNameAttribute("operator");
+        
+        _metadata.Add(operatorName);
 
-        _metadata.Add(new OperatorNameMetadata(product.ToLower()));
-        _metadata.Add(new ImageMetadata(
-            registery: "ghcr.io",
-            repository: company.ToLower(),
-            imageName: product.ToLower(),
-            tag: version.ToLower()
-        ));
+        var dockerImage = Assembly.GetEntryAssembly()?.GetCustomAttribute<DockerImageAttribute>() 
+            ?? new DockerImageAttribute("ghcr.io", "operator", "operator", "latest");
+
+        _metadata.Add(dockerImage);
     }
 
     public IConfiguration Configuration => _configurationManager;

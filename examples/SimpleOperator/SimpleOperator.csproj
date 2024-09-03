@@ -4,13 +4,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Company>Pmdevers</Company>
-    <Product>simple-operator</Product>
+    <Company>pmdevers</Company>
+    <OperatorName>simple-operator</OperatorName>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\K8sOperator.NET\K8sOperator.NET.csproj" />
   </ItemGroup>
 
-
+ 
 </Project>
