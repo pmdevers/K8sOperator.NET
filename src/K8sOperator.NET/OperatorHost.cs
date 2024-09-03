@@ -1,5 +1,4 @@
-﻿using DotMake.CommandLine;
-using K8sOperator.NET.Builder;
+﻿using K8sOperator.NET.Builder;
 using K8sOperator.NET.Commands;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -52,7 +51,15 @@ public partial class OperatorHostApplication : IOperatorApplication
 
     public async Task RunAsync()
     {
-        Cli.Ext.SetServiceProvider(ServiceProvider);
-        await Cli.RunAsync<Root>(_args);
+        if (_args.Contains("--operator"))
+        {
+            var oper = ActivatorUtilities.CreateInstance<Operator>(ServiceProvider, DataSource);
+            await oper.RunAsync();
+        } 
+        else if(_args.Contains("install"))
+        {
+            var installer = ActivatorUtilities.CreateInstance<Install>(ServiceProvider, DataSource);
+            await installer.RunAsync();
+        }
     }
 }

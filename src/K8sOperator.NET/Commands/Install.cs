@@ -1,31 +1,14 @@
-﻿using DotMake.CommandLine;
-using k8s;
+﻿using k8s;
 using k8s.Models;
 using K8sOperator.NET.Builder;
 using K8sOperator.NET.Extensions;
-using K8sOperator.NET.Generator;
 using K8sOperator.NET.Generator.Builders;
 using K8sOperator.NET.Metadata;
-using System;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 
 namespace K8sOperator.NET.Commands;
 
-[CliCommand(
-    Name = "install",
-    Description = "Install or update operator",
-    Parent = typeof(Root)
-    )]
 internal class Install(IServiceProvider serviceProvider, IControllerDataSource dataSource)
 {
-    [CliOption(Description = "export")]
-    public bool Export { get; set; } = true;
-
-    [CliOption(Description = "Name of the operator")]
-    public string Name { get; set; } = Assembly.GetEntryAssembly()?.GetName().Name ?? string.Empty;
-
     public async Task RunAsync()
     {
         var watchers = dataSource.GetWatchers(serviceProvider);
@@ -33,15 +16,12 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
         var clusterrolebinding = CreateClusterRoleBinding(dataSource.Metadata);
         var deployment = CreateDeployment(dataSource.Metadata);
 
-
         foreach (var item in watchers)
         {
             var crd = CreateCustomResourceDefinition(item);
-
             Console.WriteLine(KubernetesYaml.Serialize(crd));
             Console.WriteLine("---");
         }
-
         Console.WriteLine(KubernetesYaml.Serialize(clusterrole));
         Console.WriteLine("---");
         Console.WriteLine(KubernetesYaml.Serialize(clusterrolebinding));
