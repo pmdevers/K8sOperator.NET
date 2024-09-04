@@ -12,3 +12,8 @@ public interface IKubernetesBuilder
     /// </summary>
     public IServiceCollection Services { get; }
 }
+
+internal sealed class KubernetesBuilder(IServiceCollection services) : IKubernetesBuilder
+{
+    public IServiceCollection Services { get; } = services;
+}

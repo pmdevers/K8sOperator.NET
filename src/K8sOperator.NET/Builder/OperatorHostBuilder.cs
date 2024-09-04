@@ -56,6 +56,7 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
 
     internal OperatorApplicationBuilder(string[] args)
     {
+        _args = args;
         _logging = new(_serviceCollection);
         _kubernetes = new(_serviceCollection);
 
@@ -63,7 +64,6 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         ConfigureLogging();
         ConfigureKubernetes();
         ConfigureMetadata();
-        _args = args;
 
         DataSource = new ControllerDatasource(_metadata);
     }
@@ -72,14 +72,12 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
     {
         
         var operatorName = Assembly.GetEntryAssembly()?.GetCustomAttribute<OperatorNameAttribute>()
-            ?? new OperatorNameAttribute("operator");
+            ?? OperatorNameAttribute.Default;
         
-        _metadata.Add(operatorName);
-
         var dockerImage = Assembly.GetEntryAssembly()?.GetCustomAttribute<DockerImageAttribute>() 
-            ?? new DockerImageAttribute("ghcr.io", "operator", "operator", "latest");
+            ?? DockerImageAttribute.Default;
 
-        _metadata.Add(dockerImage);
+        _metadata.AddRange([operatorName, dockerImage]);
     }
 
     public IConfiguration Configuration => _configurationManager;
@@ -122,15 +120,4 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
     {
         _serviceCollection.AddKubernetes();
     }
-}
-
-
-internal sealed class LoggingBuilder(IServiceCollection services) : ILoggingBuilder
-{
-    public IServiceCollection Services { get; } = services;
-}
-
-internal sealed class KubernetesBuilder(IServiceCollection services) : IKubernetesBuilder
-{
-    public IServiceCollection Services { get; } = services;
 }
