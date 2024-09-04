@@ -1,16 +1,17 @@
 ﻿using k8s;
 using k8s.Models;
 using K8sOperator.NET.Extensions;
-using K8sOperator.NET.Generator.Builders;
+using K8sOperator.NET.Generators.Builders;
 using K8sOperator.NET.Metadata;
 
-namespace K8sOperator.NET.Generator;
+namespace K8sOperator.NET.Generators;
 
 /// <summary>
 /// 
 /// </summary>
 /// <param name="app"></param>
-public class Install(IOperatorApplication app)
+/// <param name="writer"></param>
+public class Install(IOperatorApplication app, StringWriter writer)
 {
     /// <summary>
     /// 
@@ -26,16 +27,19 @@ public class Install(IOperatorApplication app)
         foreach (var item in watchers)
         {
             var crd = CreateCustomResourceDefinition(item);
-            Console.WriteLine(KubernetesYaml.Serialize(crd));
-            Console.WriteLine("---");
-        }
-        Console.WriteLine(KubernetesYaml.Serialize(clusterrole));
-        Console.WriteLine("---");
-        Console.WriteLine(KubernetesYaml.Serialize(clusterrolebinding));
-        Console.WriteLine("---");
-        Console.WriteLine(KubernetesYaml.Serialize(deployment));
 
-        await Task.CompletedTask;
+            await Write(crd);
+        }
+
+        await Write(clusterrole);
+        await Write(clusterrolebinding);
+        await Write(deployment);
+    }
+
+    private async Task Write(IKubernetesObject obj)
+    {
+        await writer.WriteLineAsync(KubernetesYaml.Serialize(obj));
+        await writer.WriteLineAsync("---");
     }
 
     private static V1CustomResourceDefinition CreateCustomResourceDefinition(IEventWatcher item)

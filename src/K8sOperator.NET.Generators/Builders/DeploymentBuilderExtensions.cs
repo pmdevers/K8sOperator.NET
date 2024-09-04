@@ -1,7 +1,7 @@
 ﻿using k8s.Authentication;
 using k8s.Models;
 
-namespace K8sOperator.NET.Generator.Builders;
+namespace K8sOperator.NET.Generators.Builders;
 
 /// <summary>
 /// Provides extension methods for building Kubernetes Deployment objects.
@@ -16,7 +16,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <returns>A builder for configuring the deployment spec.</returns>
     public static IKubernetesObjectBuilder<V1DeploymentSpec> WithSpec<TBuilder>(this TBuilder builder)
-        where TBuilder: IKubernetesObjectBuilder<V1Deployment>
+        where TBuilder : IKubernetesObjectBuilder<V1Deployment>
     {
         var specBuilder = new KubernetesObjectBuilder<V1DeploymentSpec>();
         builder.Add(x => x.Spec = specBuilder.Build());
@@ -59,7 +59,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="matchExpressions">An action to configure match expressions.</param>
     /// <param name="matchLabels">An action to configure match labels.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithSelector<TBuilder>(this TBuilder builder, 
+    public static TBuilder WithSelector<TBuilder>(this TBuilder builder,
         Action<IList<V1LabelSelectorRequirement>>? matchExpressions = null,
         Action<Dictionary<string, string>>? matchLabels = null)
         where TBuilder : IKubernetesObjectBuilder<V1DeploymentSpec>
@@ -70,10 +70,11 @@ public static class DeploymentBuilderExtensions
         var expressions = new List<V1LabelSelectorRequirement>();
         matchExpressions?.Invoke(expressions);
 
-        builder.Add(x => x.Selector = new() { 
+        builder.Add(x => x.Selector = new()
+        {
             MatchLabels = matchLabels is null ? null : labels,
             MatchExpressions = matchExpressions is null ? null : expressions
-        }); 
+        });
         return builder;
     }
 
@@ -105,7 +106,7 @@ public static class DeploymentBuilderExtensions
         return podBuilder;
     }
 
-    
+
 
     /// <summary>
     /// Adds a container to the pod spec.
@@ -162,7 +163,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="limits">An action to configure resource limits.</param>
     /// <param name="requests">An action to configure resource requests.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithResources<TBuilder>(this TBuilder builder, 
+    public static TBuilder WithResources<TBuilder>(this TBuilder builder,
         Action<IList<V1ResourceClaim>>? claims = null,
         Action<IDictionary<string, ResourceQuantity>>? limits = null,
         Action<IDictionary<string, ResourceQuantity>>? requests = null
@@ -197,7 +198,7 @@ public static class DeploymentBuilderExtensions
     public static TBuilder AddEnvFromObjectField<TBuilder>(this TBuilder builder, string name, Action<V1ObjectFieldSelector> action)
         where TBuilder : IKubernetesObjectBuilder<V1Container>
     {
-        return AddEnv(builder, name, action);
+        return builder.AddEnv(name, action);
     }
 
     /// <summary>
@@ -211,7 +212,7 @@ public static class DeploymentBuilderExtensions
     public static TBuilder AddEnvFromSecretKey<TBuilder>(this TBuilder builder, string name, Action<V1ConfigMapKeySelector> action)
         where TBuilder : IKubernetesObjectBuilder<V1Container>
     {
-        return AddEnv(builder, name, action);
+        return builder.AddEnv(name, action);
     }
 
     /// <summary>
@@ -222,10 +223,10 @@ public static class DeploymentBuilderExtensions
     /// <param name="name">The name of the environment variable.</param>
     /// <param name="action">An action to configure the secret key selector.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder AddEnvFromConfigMapKey<TBuilder>(this TBuilder builder, string name, Action<V1SecretKeySelector> action)
+    public static TBuilder AddEnvFromConfigMapKey<TBuilder>(this TBuilder builder, string name, Action<V1ConfigMapKeySelector> action)
         where TBuilder : IKubernetesObjectBuilder<V1Container>
     {
-        return AddEnv(builder, name, action);
+        return builder.AddEnv(name, action);
     }
 
     /// <summary>
@@ -239,7 +240,7 @@ public static class DeploymentBuilderExtensions
     public static TBuilder AddEnvFromResourceField<TBuilder>(this TBuilder builder, string name, Action<V1ResourceFieldSelector> action)
         where TBuilder : IKubernetesObjectBuilder<V1Container>
     {
-        return AddEnv(builder, name, action);
+        return builder.AddEnv(name, action);
     }
 
     /// <summary>
@@ -255,7 +256,7 @@ public static class DeploymentBuilderExtensions
         var b = new KubernetesObjectBuilder<V1SecurityContext>();
         securityContext(b);
 
-        builder.Add(x=>x.SecurityContext = b.Build());
+        builder.Add(x => x.SecurityContext = b.Build());
         return builder;
     }
 
@@ -373,7 +374,8 @@ public static class DeploymentBuilderExtensions
     public static TBuilder AddEnv<TBuilder>(this TBuilder builder, string name, string value)
        where TBuilder : IKubernetesObjectBuilder<V1Container>
     {
-        builder.Add(x => {
+        builder.Add(x =>
+        {
             x.Env ??= [];
             x.Env.Add(new()
             {
@@ -397,7 +399,7 @@ public static class DeploymentBuilderExtensions
     /// <exception cref="InvalidOperationException">Thrown when the resource type is not supported.</exception>
     public static TBuilder AddEnv<TBuilder, T>(this TBuilder builder, string name, Action<T> action)
         where TBuilder : IKubernetesObjectBuilder<V1Container>
-        where T: new()
+        where T : new()
     {
         var value = new T();
         action(value);
@@ -405,12 +407,13 @@ public static class DeploymentBuilderExtensions
         {
             V1ObjectFieldSelector fieldRef => new V1EnvVarSource() { FieldRef = fieldRef },
             V1SecretKeySelector secretKeyRef => new V1EnvVarSource() { SecretKeyRef = secretKeyRef },
-            V1ResourceFieldSelector resourceFieldRef => new V1EnvVarSource() { ResourceFieldRef= resourceFieldRef },
-            V1ConfigMapKeySelector configMapKeyRef => new V1EnvVarSource() {  ConfigMapKeyRef = configMapKeyRef },
+            V1ResourceFieldSelector resourceFieldRef => new V1EnvVarSource() { ResourceFieldRef = resourceFieldRef },
+            V1ConfigMapKeySelector configMapKeyRef => new V1EnvVarSource() { ConfigMapKeyRef = configMapKeyRef },
             _ => throw new InvalidOperationException()
         };
 
-        builder.Add(x => {
+        builder.Add(x =>
+        {
             x.Env ??= [];
             x.Env.Add(new()
             {

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace K8sOperator.NET.Helpers;
+namespace K8sOperator.NET.Generators;
 internal static class Utilities
 {
     /// <summary>

@@ -1,7 +1,7 @@
 ﻿using k8s;
 using k8s.Models;
 
-namespace K8sOperator.NET.Generator.Builders;
+namespace K8sOperator.NET.Generators.Builders;
 
 internal class CustomResourceDefinitionBuilder : KubernetesObjectBuilderWithMetaData<V1CustomResourceDefinition>
 {

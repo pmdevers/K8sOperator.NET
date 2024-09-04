@@ -1,7 +1,7 @@
 ﻿using k8s;
 using k8s.Models;
 
-namespace K8sOperator.NET.Generator.Builders;
+namespace K8sOperator.NET.Generators.Builders;
 
 /// <summary>
 /// Provides functionality for creating Kubernetes Deployment objects.
@@ -16,7 +16,7 @@ public static class DeploymentBuilder
         => new DeploymentBuilderImp();
 }
 
-internal class DeploymentBuilderImp : KubernetesObjectBuilderWithMetaData<V1Deployment> 
+internal class DeploymentBuilderImp : KubernetesObjectBuilderWithMetaData<V1Deployment>
 {
     public override V1Deployment Build()
     {

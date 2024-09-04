@@ -1,7 +1,7 @@
 ﻿using k8s;
 using k8s.Models;
 
-namespace K8sOperator.NET.Generator.Builders;
+namespace K8sOperator.NET.Generators.Builders;
 
 /// <summary>
 /// Represents a builder interface for Kubernetes objects that include metadata.
@@ -13,12 +13,12 @@ public interface IKubernetesObjectBuilderWithMetadata<out T> : IKubernetesObject
 
 }
 
-internal class KubernetesObjectBuilderWithMetaData<T> 
+internal class KubernetesObjectBuilderWithMetaData<T>
     : KubernetesObjectBuilder<T>, IKubernetesObjectBuilderWithMetadata<T>
     where T : class, IMetadata<V1ObjectMeta>, new()
 {
     public KubernetesObjectBuilderWithMetaData()
     {
-        Add(x=>x.Metadata = new V1ObjectMeta());
+        Add(x => x.Metadata = new V1ObjectMeta());
     }
 }
