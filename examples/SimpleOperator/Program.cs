@@ -1,6 +1,5 @@
 using K8sOperator.NET;
 using K8sOperator.NET.Extensions;
-using K8sOperator.NET.Generator;
 using SimpleOperator.Projects;
 
 
@@ -13,7 +12,5 @@ builder.AddController<ProjectController>()
     .WithFinalizer("project.local.finalizer");
 
 var app = builder.Build();
-
-await new Install(app).RunAsync();
 
 await app.RunAsync();
