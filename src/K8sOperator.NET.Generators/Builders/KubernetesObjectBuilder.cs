@@ -1,4 +1,4 @@
-﻿namespace K8sOperator.NET.Generator.Builders;
+﻿namespace K8sOperator.NET.Generators.Builders;
 
 /// <summary>
 /// Describes a Generic Kubernetes Resource Builder

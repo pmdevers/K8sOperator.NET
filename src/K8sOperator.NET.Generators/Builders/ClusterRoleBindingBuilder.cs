@@ -1,9 +1,9 @@
 ﻿using k8s;
 using k8s.Models;
 
-namespace K8sOperator.NET.Generator.Builders;
+namespace K8sOperator.NET.Generators.Builders;
 
-internal class ClusterRoleBindingBuilder : KubernetesObjectBuilderWithMetaData<V1ClusterRoleBinding> 
+internal class ClusterRoleBindingBuilder : KubernetesObjectBuilderWithMetaData<V1ClusterRoleBinding>
 {
     public override V1ClusterRoleBinding Build()
     {

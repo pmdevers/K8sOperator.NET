@@ -1,16 +1,18 @@
 ﻿using k8s;
 using k8s.Models;
+using K8sOperator.NET.Generators;
 using K8sOperator.NET.Helpers;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Models;
 using System.Reflection;
 
-namespace K8sOperator.NET.Generator.Builders;
+namespace K8sOperator.NET.Generators.Builders;
 
 /// <summary>
 /// Provides extension methods for building Kubernetes CustomResourceDefinitions.
 /// </summary>
-public static class CustomResourceDefinitionBuilderExtensions {
+public static class CustomResourceDefinitionBuilderExtensions
+{
 
     /// <summary>
     /// Configures the spec section of the CustomResourceDefinition.
@@ -52,7 +54,7 @@ public static class CustomResourceDefinitionBuilderExtensions {
     /// <param name="shortnames">Optional short names for the resource.</param>
     /// <param name="categories">Optional categories for the resource.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithNames<TBuilder>(this TBuilder builder, 
+    public static TBuilder WithNames<TBuilder>(this TBuilder builder,
         string kind,
         string kindList,
         string plural,
@@ -102,14 +104,15 @@ public static class CustomResourceDefinitionBuilderExtensions {
         b.Add(x => x.Name = name);
         schema(b);
 
-        builder.Add(x => {
+        builder.Add(x =>
+        {
 
             x.Versions ??= [];
-            if(!x.Versions.Any(x=>x.Name == name))
+            if (!x.Versions.Any(x => x.Name == name))
             {
                 x.Versions.Add(b.Build());
             }
-            
+
         });
         return builder;
     }
@@ -160,12 +163,14 @@ public static class CustomResourceDefinitionBuilderExtensions {
         var status = resourceType.GetProperty("Status")!;
         var spec = resourceType.GetProperty("Spec")!;
 
-        s.WithProperty("status", sub => {
+        s.WithProperty("status", sub =>
+        {
             sub.ObjectType(status.PropertyType);
         });
         s.WithProperty("spec", sub => sub.ObjectType(spec.PropertyType));
 
-        builder.Add(x => {
+        builder.Add(x =>
+        {
             b.Add(x => x.OpenAPIV3Schema = s.Build());
             x.Schema = b.Build();
         });
@@ -185,9 +190,10 @@ public static class CustomResourceDefinitionBuilderExtensions {
         var b = new KubernetesObjectBuilder<V1CustomResourceValidation>();
         var s = new KubernetesObjectBuilder<V1JSONSchemaProps>();
         schema(s);
-        
-        builder.Add(x =>{
-            b.Add(x=>x.OpenAPIV3Schema = s.Build());
+
+        builder.Add(x =>
+        {
+            b.Add(x => x.OpenAPIV3Schema = s.Build());
             x.Schema = b.Build();
         });
         return builder;
@@ -270,7 +276,8 @@ public static class CustomResourceDefinitionBuilderExtensions {
         var p = new KubernetesObjectBuilder<V1JSONSchemaProps>();
         schema(p);
 
-        builder.Add(x => {
+        builder.Add(x =>
+        {
             x.Properties ??= new Dictionary<string, V1JSONSchemaProps>();
             x.Properties.Add($"{name[..1].ToLowerInvariant()}{name[1..]}", p.Build());
         });
@@ -329,7 +336,7 @@ public static class CustomResourceDefinitionBuilderExtensions {
 
                 builder.OfType("object");
                 builder.IsNullable(false);
-                foreach(var prop in type.GetProperties())
+                foreach (var prop in type.GetProperties())
                 {
                     builder.WithProperty(prop.Name, s => s.OfType(prop.PropertyType));
                 }
@@ -337,10 +344,10 @@ public static class CustomResourceDefinitionBuilderExtensions {
                 builder.WithRequired(type.GetProperties()
                     .Where(x => !x.IsNullable())
                     .Select(x => x.Name).ToList() switch
-                    {
-                        { Count: > 0 } p => p,
-                        _ => null,
-                    });
+                {
+                    { Count: > 0 } p => p,
+                    _ => null,
+                });
 
                 return builder;
         }
@@ -356,8 +363,8 @@ public static class CustomResourceDefinitionBuilderExtensions {
         return builder;
     }
 
-    
 
-    
+
+
 }
 

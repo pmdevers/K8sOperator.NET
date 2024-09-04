@@ -1,6 +1,6 @@
 ﻿using k8s.Models;
 
-namespace K8sOperator.NET.Generator.Builders;
+namespace K8sOperator.NET.Generators.Builders;
 
 /// <summary>
 /// Provides extension methods for building Kubernetes policy rules.

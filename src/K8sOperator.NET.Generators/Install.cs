@@ -1,10 +1,10 @@
 ﻿using k8s;
 using k8s.Models;
 using K8sOperator.NET.Extensions;
-using K8sOperator.NET.Generator.Builders;
+using K8sOperator.NET.Generators.Builders;
 using K8sOperator.NET.Metadata;
 
-namespace K8sOperator.NET.Generator;
+namespace K8sOperator.NET.Generators;
 
 /// <summary>
 /// 
