@@ -1,6 +1,8 @@
 using K8sOperator.NET;
 using K8sOperator.NET.Extensions;
+using K8sOperator.NET.Generator;
 using SimpleOperator.Projects;
+
 
 var builder = OperatorHost.CreateOperatorApplicationBuilder(args);
 
@@ -12,7 +14,6 @@ builder.AddController<ProjectController>()
 
 var app = builder.Build();
 
+await new Install(app).RunAsync();
+
 await app.RunAsync();
-
-
-

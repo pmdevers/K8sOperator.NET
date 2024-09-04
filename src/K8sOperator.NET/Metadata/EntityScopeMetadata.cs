@@ -1,7 +1,22 @@
-﻿using K8sOperator.NET.Generator.Builders;
-using K8sOperator.NET.Helpers;
+﻿using K8sOperator.NET.Helpers;
 
 namespace K8sOperator.NET.Metadata;
+
+/// <summary>
+/// Specifies the scope of a Kubernetes entity.
+/// </summary>
+public enum EntityScope
+{
+    /// <summary>
+    /// The entity is scoped to a specific namespace.
+    /// </summary>
+    Namespaced = 0,
+
+    /// <summary>
+    /// The entity is scoped to the entire cluster.
+    /// </summary>
+    Cluster = 1
+}
 
 /// <summary>
 /// Represents metadata that includes the scope of an entity in Kubernetes.

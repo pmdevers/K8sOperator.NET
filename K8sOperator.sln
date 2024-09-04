@@ -32,6 +32,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{ED
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleOperator", "examples\SimpleOperator\SimpleOperator.csproj", "{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "K8sOperator.NET.Generators", "src\K8sOperator.NET.Generators\K8sOperator.NET.Generators.csproj", "{183BE367-0544-4AD1-B741-2BA2F186BC0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{183BE367-0544-4AD1-B741-2BA2F186BC0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{183BE367-0544-4AD1-B741-2BA2F186BC0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{183BE367-0544-4AD1-B741-2BA2F186BC0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{183BE367-0544-4AD1-B741-2BA2F186BC0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +66,7 @@ Global
 		{C0360068-BBDE-4ABF-B357-765C792CDCF5} = {9320CC2F-6BB6-4B29-B625-EB427EE87891}
 		{160DFED1-DD63-412C-9D60-84D965626DD9} = {898CC489-C84A-49BD-9D77-3CEA1F6A7180}
 		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25} = {ED5FF81E-F3EA-4BEF-9B72-31A24F9386E3}
+		{183BE367-0544-4AD1-B741-2BA2F186BC0E} = {898CC489-C84A-49BD-9D77-3CEA1F6A7180}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {49DE7562-1920-49AD-A220-E10302CEC632}

@@ -1,4 +1,6 @@
-﻿namespace K8sOperator.NET.Builder;
+﻿using K8sOperator.NET.Builder;
+
+namespace K8sOperator.NET;
 
 /// <summary>
 /// Describes a Controller Datasource
@@ -9,12 +11,6 @@ public interface IControllerDataSource
     /// Gets a readonly list of metadata
     /// </summary>
     IReadOnlyList<object> Metadata { get; }
-
-    /// <summary>
-    /// Adds a controller to the datasource.
-    /// </summary>
-    /// <returns></returns>
-    IControllerConventionBuilder AddController(Type controllerType);
 
     /// <summary>
     /// 
@@ -29,7 +25,7 @@ internal class ControllerDatasource(List<object> metadata) : IControllerDataSour
     private readonly List<ControllerEntry> _entries = [];
     public IReadOnlyList<object> Metadata => metadata;
 
-    public IControllerConventionBuilder AddController(Type controllerType)
+    internal IControllerConventionBuilder AddController(Type controllerType)
     {
         var conventions = new AddAfterProcessBuildConventionCollection();
         var finallyConventions = new AddAfterProcessBuildConventionCollection();
@@ -46,7 +42,7 @@ internal class ControllerDatasource(List<object> metadata) : IControllerDataSour
 
     public IEnumerable<IEventWatcher> GetWatchers(IServiceProvider serviceProvider)
     {
-        foreach (var entry in _entries) 
+        foreach (var entry in _entries)
         {
             var builder = new ControllerBuilder(serviceProvider, entry.ControllerType);
 
@@ -74,7 +70,7 @@ internal class ControllerDatasource(List<object> metadata) : IControllerDataSour
         public required Type ControllerType { get; init; }
         public required AddAfterProcessBuildConventionCollection Conventions { get; init; }
         public required AddAfterProcessBuildConventionCollection FinallyConventions { get; init; }
-        
+
     }
     internal sealed class AddAfterProcessBuildConventionCollection :
             List<Action<IControllerBuilder>>,

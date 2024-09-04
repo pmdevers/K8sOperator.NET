@@ -12,7 +12,7 @@
         },
         "install": {
             "commandName": "Project",
-            "commandLineArgs": "install > simple-operator-system.yaml",
+            "commandLineArgs": "install=true --export true",
             "launchBrowser": true,
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"

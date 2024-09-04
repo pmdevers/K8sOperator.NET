@@ -7,7 +7,6 @@
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
     <CompanyName>PMDEvers</CompanyName>
-    <ProjectName>K8sOperator.NET</ProjectName>
 
     <PackageId>$(ProjectName)</PackageId>
     <Description>

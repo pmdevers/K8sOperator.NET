@@ -1,20 +1,27 @@
 ﻿using k8s;
 using k8s.Models;
-using K8sOperator.NET.Builder;
 using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Generator.Builders;
 using K8sOperator.NET.Metadata;
 
-namespace K8sOperator.NET.Commands;
+namespace K8sOperator.NET.Generator;
 
-internal class Install(IServiceProvider serviceProvider, IControllerDataSource dataSource)
+/// <summary>
+/// 
+/// </summary>
+/// <param name="app"></param>
+public class Install(IOperatorApplication app)
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public async Task RunAsync()
     {
-        var watchers = dataSource.GetWatchers(serviceProvider);
-        var clusterrole = CreateClusterRole(dataSource.Metadata, watchers);
-        var clusterrolebinding = CreateClusterRoleBinding(dataSource.Metadata);
-        var deployment = CreateDeployment(dataSource.Metadata);
+        var watchers = app.DataSource.GetWatchers(app.ServiceProvider);
+        var clusterrole = CreateClusterRole(app.DataSource.Metadata, watchers);
+        var clusterrolebinding = CreateClusterRoleBinding(app.DataSource.Metadata);
+        var deployment = CreateDeployment(app.DataSource.Metadata);
 
         foreach (var item in watchers)
         {
@@ -47,8 +54,9 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
               )
               .WithScope(EntityScope.Namespaced)
               .WithVersion(
-                    group.ApiVersion, 
-                    schema=> {
+                    group.ApiVersion,
+                    schema =>
+                    {
                         schema.WithSchemaForType(item.Controller.ResourceType);
                         schema.WithServed(true);
                         schema.WithStorage(true);
@@ -60,48 +68,53 @@ internal class Install(IServiceProvider serviceProvider, IControllerDataSource d
     private static V1Deployment CreateDeployment(IReadOnlyList<object> metadata)
     {
         var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name)!;
-        var image = metadata.TryGetValue<DockerImageAttribute, string>(x => x.GetImage())!;
+        var image = metadata.TryGetValue<IImageMetadata, string>(x => x.GetImage())!;
 
         var deployment = DeploymentBuilder.Create();
-        
+
         deployment.WithName($"{name}-deployment")
             .WithLabel("operator-deployment", name)
             .WithSpec()
                 .WithReplicas(1)
                 .WithRevisionHistory(0)
-                .WithSelector(matchLabels: x => {
+                .WithSelector(matchLabels: x =>
+                {
                     x.Add("operator-deployment", name);
                 })
                 .WithTemplate()
                     .WithLabel("operator-deployment", name)
-                    
+
                     .WithPod()
                         .WithSecurityContext(b =>
-                            b.Add(x => {
+                            b.Add(x =>
+                            {
                                 x.RunAsNonRoot = true;
                                 x.SeccompProfile = new()
                                 {
                                     Type = "RuntimeDefault"
                                 };
-                         }))
+                            }))
                         .WithTerminationGracePeriodSeconds(10)
                         .AddContainer()
                             .AddEnvFromObjectField("test", x => x.FieldPath = "metadata.namespace")
-                            .WithSecurityContext(x => { 
+                            .WithSecurityContext(x =>
+                            {
                                 x.AllowPrivilegeEscalation(false);
-                                x.RunAsRoot(); 
+                                x.RunAsRoot();
                                 x.RunAsUser(2024);
                                 x.RunAsGroup(2024);
                                 x.WithCapabilities(x => x.WithDrop("ALL"));
-                             })
+                            })
                             .WithName(name)
                             .WithImage(image)
                             .WithResources(
-                                limits: x => {
+                                limits: x =>
+                                {
                                     x.Add("cpu", new ResourceQuantity("100m"));
                                     x.Add("memory", new ResourceQuantity("128Mi"));
                                 },
-                                requests: x => {
+                                requests: x =>
+                                {
                                     x.Add("cpu", new ResourceQuantity("100m"));
                                     x.Add("memory", new ResourceQuantity("64Mi"));
                                 }
