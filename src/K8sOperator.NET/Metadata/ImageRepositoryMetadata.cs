@@ -35,6 +35,8 @@ public interface IImageMetadata
 [AttributeUsage(AttributeTargets.Assembly)]
 internal class DockerImageAttribute(string registery, string repository, string imageName, string tag) : Attribute, IImageMetadata
 {
+    public static DockerImageAttribute Default => new("ghcr.io", "operator", "operator", "latest");
+
     public string Registery => registery;
     public string Repository => repository;
     public string Name => imageName;

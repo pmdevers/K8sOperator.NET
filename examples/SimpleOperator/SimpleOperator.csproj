@@ -9,7 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="K8sOperator.NET" Version="0.0.1-alpha0003" />
+    <ProjectReference Include="..\..\src\K8sOperator.NET.Generators\K8sOperator.NET.Generators.csproj" />
+    <ProjectReference Include="..\..\src\K8sOperator.NET\K8sOperator.NET.csproj" />
   </ItemGroup>
 
  

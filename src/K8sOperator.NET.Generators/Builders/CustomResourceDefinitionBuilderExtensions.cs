@@ -1,6 +1,7 @@
 ﻿using k8s;
 using k8s.Models;
 using K8sOperator.NET.Helpers;
+using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Models;
 using System.Reflection;
 

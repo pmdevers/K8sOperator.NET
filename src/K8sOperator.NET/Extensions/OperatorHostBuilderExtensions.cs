@@ -9,6 +9,7 @@ namespace K8sOperator.NET.Extensions;
 /// </summary>
 public static class OperatorHostBuilderExtensions
 {
+
     /// <summary>
     /// Sets the name of the operator application.
     /// </summary>
@@ -55,17 +56,4 @@ public static class OperatorHostBuilderExtensions
         where T : IController
         => builder.AddController(typeof(T));
 
-    /// <summary>
-    /// Adds a controller to the operator application using the specified type.
-    /// </summary>
-    /// <param name="builder">The operator application builder.</param>
-    /// <param name="controllerType">The type of the controller to add.</param>
-    /// <returns>The controller convention builder for further configuration.</returns>
-    public static IControllerConventionBuilder AddController(this IOperatorApplicationBuilder builder, Type controllerType)
-    {
-        return builder
-            .DataSource
-            .AddController(controllerType)
-            .WithMetadata([.. builder.Metadata]);
-    }
 }

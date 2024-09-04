@@ -1,8 +1,7 @@
-﻿using K8sOperator.NET.Builder;
-using K8sOperator.NET.Extensions;
+﻿using K8sOperator.NET.Extensions;
 using Microsoft.Extensions.Logging;
 
-namespace K8sOperator.NET.Commands;
+namespace K8sOperator.NET;
 
 internal class Operator(IServiceProvider serviceProvider, IControllerDataSource dataSource, ILoggerFactory loggerFactory)
 {

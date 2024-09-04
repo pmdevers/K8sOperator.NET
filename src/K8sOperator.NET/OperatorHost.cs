@@ -1,5 +1,5 @@
 ﻿using K8sOperator.NET.Builder;
-using K8sOperator.NET.Commands;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace K8sOperator.NET;
@@ -13,6 +13,11 @@ public interface IOperatorApplication
     /// Gets the service provider that is used to resolve dependencies within the application.
     /// </summary>
     IServiceProvider ServiceProvider { get; }
+
+    /// <summary>
+    /// The application's configured Microsoft.Extensions.Configuration.IConfiguration
+    /// </summary>
+    IConfiguration Configuration { get; }
 
     /// <summary>
     /// Gets the data source that provides access to Kubernetes controllers.
@@ -42,30 +47,26 @@ public static class OperatorHost
 
 internal class OperatorHostApplication : IOperatorApplication
 {
-    private readonly string[] _args;
-
-    internal OperatorHostApplication(IServiceProvider serviceProvider, IControllerDataSource dataSource, string[] args)
+    internal OperatorHostApplication(
+        IServiceProvider serviceProvider,
+        IConfiguration configuration,
+        IControllerDataSource dataSource
+    )
     {
         ServiceProvider = serviceProvider;
+        Configuration = configuration;
         DataSource = dataSource;
-        _args = args;
     }
 
     public IServiceProvider ServiceProvider { get; }
+
+    public IConfiguration Configuration { get; }
 
     public IControllerDataSource DataSource { get; }
 
     public async Task RunAsync()
     {
-        if (_args.Contains("--operator"))
-        {
-            var oper = ActivatorUtilities.CreateInstance<Operator>(ServiceProvider, DataSource);
-            await oper.RunAsync();
-        } 
-        else if(_args.Contains("install"))
-        {
-            var installer = ActivatorUtilities.CreateInstance<Install>(ServiceProvider, DataSource);
-            await installer.RunAsync();
-        }
+        var oper = ActivatorUtilities.CreateInstance<Operator>(ServiceProvider, DataSource);
+        await oper.RunAsync();
     }
 }

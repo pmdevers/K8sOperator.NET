@@ -14,5 +14,7 @@ public interface IOperatorNameMetadata
 [AttributeUsage(AttributeTargets.Assembly)]
 internal class OperatorNameAttribute(string name) : Attribute, IOperatorNameMetadata
 {
+    public static OperatorNameAttribute Default => new("operator");
+
     public string Name => name;
 }
