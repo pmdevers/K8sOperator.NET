@@ -34,6 +34,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleOperator", "examples\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "K8sOperator.NET.Generators", "src\K8sOperator.NET.Generators\K8sOperator.NET.Generators.csproj", "{183BE367-0544-4AD1-B741-2BA2F186BC0E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "K8sOperator.NET.Generators.Tests", "test\K8sOperator.NET.Generators.Tests\K8sOperator.NET.Generators.Tests.csproj", "{D07BFDEA-0E46-4822-9F38-9581425FD93F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{183BE367-0544-4AD1-B741-2BA2F186BC0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{183BE367-0544-4AD1-B741-2BA2F186BC0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{183BE367-0544-4AD1-B741-2BA2F186BC0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D07BFDEA-0E46-4822-9F38-9581425FD93F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D07BFDEA-0E46-4822-9F38-9581425FD93F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D07BFDEA-0E46-4822-9F38-9581425FD93F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D07BFDEA-0E46-4822-9F38-9581425FD93F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{160DFED1-DD63-412C-9D60-84D965626DD9} = {898CC489-C84A-49BD-9D77-3CEA1F6A7180}
 		{B7588B10-BDD2-4622-BB16-18EFFBE7BE25} = {ED5FF81E-F3EA-4BEF-9B72-31A24F9386E3}
 		{183BE367-0544-4AD1-B741-2BA2F186BC0E} = {898CC489-C84A-49BD-9D77-3CEA1F6A7180}
+		{D07BFDEA-0E46-4822-9F38-9581425FD93F} = {9320CC2F-6BB6-4B29-B625-EB427EE87891}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {49DE7562-1920-49AD-A220-E10302CEC632}
