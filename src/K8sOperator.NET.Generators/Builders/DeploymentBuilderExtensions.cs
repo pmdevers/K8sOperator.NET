@@ -223,7 +223,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="name">The name of the environment variable.</param>
     /// <param name="action">An action to configure the secret key selector.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder AddEnvFromConfigMapKey<TBuilder>(this TBuilder builder, string name, Action<V1SecretKeySelector> action)
+    public static TBuilder AddEnvFromConfigMapKey<TBuilder>(this TBuilder builder, string name, Action<V1ConfigMapKeySelector> action)
         where TBuilder : IKubernetesObjectBuilder<V1Container>
     {
         return builder.AddEnv(name, action);

@@ -1,6 +1,6 @@
 using K8sOperator.NET;
 using K8sOperator.NET.Extensions;
-using K8sOperator.NET.Generator;
+using K8sOperator.NET.Generators;
 using SimpleOperator.Projects;
 
 
