@@ -1,5 +1,6 @@
 ﻿using k8s;
 using k8s.Models;
+using K8sOperator.NET.Builder;
 using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Generators.Builders;
 using K8sOperator.NET.Metadata;
@@ -9,15 +10,16 @@ namespace K8sOperator.NET.Generators;
 /// <summary>
 /// 
 /// </summary>
-/// <param name="app"></param>
-/// <param name="writer"></param>
-public class Install(IOperatorApplication app, StringWriter writer)
+[OperatorArgument("install", Description = "Generates the install manifests")]
+public class InstallCommand(IOperatorApplication app) : IOperatorCommand
 {
+    private readonly StringWriter _output = new();
+
     /// <summary>
     /// 
     /// </summary>
     /// <returns></returns>
-    public async Task RunAsync()
+    public async Task RunAsync(string[] args)
     {
         var watchers = app.DataSource.GetWatchers(app.ServiceProvider);
         var clusterrole = CreateClusterRole(app.DataSource.Metadata, watchers);
@@ -34,12 +36,14 @@ public class Install(IOperatorApplication app, StringWriter writer)
         await Write(clusterrole);
         await Write(clusterrolebinding);
         await Write(deployment);
+
+        Console.WriteLine(_output.ToString());
     }
 
     private async Task Write(IKubernetesObject obj)
     {
-        await writer.WriteLineAsync(KubernetesYaml.Serialize(obj));
-        await writer.WriteLineAsync("---");
+        await _output.WriteLineAsync(KubernetesYaml.Serialize(obj));
+        await _output.WriteLineAsync("---");
     }
 
     private static V1CustomResourceDefinition CreateCustomResourceDefinition(IEventWatcher item)

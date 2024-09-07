@@ -3,6 +3,7 @@ using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Data.Common;
 using System.Reflection;
 
 namespace K8sOperator.NET.Builder;
@@ -31,6 +32,11 @@ public interface IOperatorApplicationBuilder
     /// Gets the data source for the controller, providing access to the Kubernetes resources.
     /// </summary>
     IControllerDataSource DataSource { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    IKubernetesBuilder Kubernetes { get; }
 
     /// <summary>
     /// Gets the list of metadata associated with the application.
@@ -66,6 +72,7 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
     {
         _logging = new(_serviceCollection);
         _kubernetes = new(_serviceCollection);
+
         _args = args;
 
         ConfigureConfiguration();
@@ -86,13 +93,11 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
 
         _metadata.AddRange([operatorName, dockerImage]);
     }
-
     public IConfigurationManager Configuration => _configurationManager;
     public IServiceCollection Services => _serviceCollection;
     public ILoggingBuilder Logging => _logging;
     public IKubernetesBuilder Kubernetes => _kubernetes;
     public IControllerDataSource DataSource => _datasource;
-
     public List<object> Metadata => _metadata;
 
     public IControllerConventionBuilder AddController(Type controllerType)
@@ -103,17 +108,21 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
 
     public IOperatorApplication Build()
     {
+       _serviceCollection.AddSingleton<IConfiguration>(_configurationManager);
+       _serviceCollection.AddSingleton<IControllerDataSource>(_datasource);
+       _serviceCollection.AddSingleton<IOperatorApplication>(x => new OperatorHostApplication(x, _args));
+
        var serviceProvider = _serviceCollection.BuildServiceProvider();
-       return new OperatorHostApplication(serviceProvider, _configurationManager, DataSource);
+       return serviceProvider.GetRequiredService<IOperatorApplication>();
     }
 
     private void ConfigureConfiguration()
     {
         _configurationManager
             .SetBasePath(Directory.GetCurrentDirectory())
-            //.AddJsonFile("appsettings.json", true, true)
-            //.AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
-            //.AddEnvironmentVariables()
+            .AddJsonFile("appsettings.json", true, true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
+            .AddEnvironmentVariables()
             .AddCommandLine(_args);
     }
 

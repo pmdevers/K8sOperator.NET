@@ -30,32 +30,30 @@ public interface IEventWatcher
     Task Start(CancellationToken cancellationToken);
 }
 
-internal class EventWatcher<T>(
-    IKubernetes client, 
-    Controller<T> controller,
-    List<object> metadata,
-    ILoggerFactory loggerfactory) : IEventWatcher
+internal class EventWatcher<T>(IKubernetes client, Controller<T> controller, List<object> metadata, ILoggerFactory loggerfactory) : IEventWatcher
     where T: CustomResource
 {
-    private KubernetesEntityAttribute Crd => metadata.OfType<KubernetesEntityAttribute>().First();
-    private string Namespace => metadata.OfType<IWatchNamespaceMetadata>().FirstOrDefault()?.Namespace ?? "default";
-    private string LabelSelector => metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
-    private string Finalizer => metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
-
+    private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().First();
+    private string Namespace => Metadata.OfType<IWatchNamespaceMetadata>().FirstOrDefault()?.Namespace ?? "default";
+    private string LabelSelector => Metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
+    private string Finalizer => Metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
+    
     private readonly ChangeTracker _changeTracker = new();
-    private ILogger logger => loggerfactory.CreateLogger("watcher");
     private bool _isRunning;
     private CancellationToken _cancellationToken = CancellationToken.None;
-    
-    public IReadOnlyList<object> Metadata => metadata;
-    public IController Controller => controller;
+    private readonly Controller<T> _controller = controller;
+
+    public IKubernetes Client { get; } = client;
+    public ILogger Logger { get; } = loggerfactory.CreateLogger("watcher");
+    public IReadOnlyList<object> Metadata { get; } = metadata;
+    public IController Controller => _controller;
 
     public async Task Start(CancellationToken cancellationToken)
     {
         _cancellationToken = cancellationToken;
         _isRunning = true;
 
-        var response = client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
+        var response = Client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
             Crd.Group,
             Crd.ApiVersion,
             Namespace,
@@ -67,19 +65,19 @@ internal class EventWatcher<T>(
             cancellationToken: cancellationToken
         );
 
-        logger.BeginWatch(Namespace, Crd.PluralName, LabelSelector);
+        Logger.BeginWatch(Namespace, Crd.PluralName, LabelSelector);
 
         await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
         {
             OnEvent(type, item);
         }
 
-        logger.EndWatch(Namespace, Crd.PluralName, LabelSelector);
+        Logger.EndWatch(Namespace, Crd.PluralName, LabelSelector);
     }
 
     private void OnEvent(WatchEventType eventType, T customResource)
     {
-        logger.EventReceived(eventType, customResource);
+        Logger.EventReceived(eventType, customResource);
 
         ProccessEventAsync(eventType, customResource!)
             .ContinueWith(t =>
@@ -87,7 +85,7 @@ internal class EventWatcher<T>(
                 if(t.IsFaulted)
                 {
                     var exception = t.Exception.Flatten().InnerException;
-                    logger.ProcessEventError(exception, eventType, customResource);
+                    Logger.ProcessEventError(exception, eventType, customResource);
                 }
             })
             ;
@@ -115,7 +113,7 @@ internal class EventWatcher<T>(
                 await HandleErrorEventAsync(resource, _cancellationToken);
                 break;
             case WatchEventType.Bookmark:
-                await HandleBookmarkEventAsync(controller, resource);
+                await HandleBookmarkEventAsync(resource, _cancellationToken);
                 break;
             default:
                 break;
@@ -124,68 +122,68 @@ internal class EventWatcher<T>(
 
     private async Task HandleErrorEventAsync(T resource, CancellationToken cancellationToken)
     {
-        logger.HandleError(resource);
+        Logger.HandleError(resource);
 
-        logger.BeginError(resource);
+        Logger.BeginError(resource);
 
-        await controller.ErrorAsync(resource, cancellationToken);
-        
-        logger.EndError(resource);
+        await _controller.ErrorAsync(resource, cancellationToken);
+
+        Logger.EndError(resource);
     }
 
-    private async Task HandleBookmarkEventAsync(Controller<T> controller, T resource)
+    private async Task HandleBookmarkEventAsync(T resource, CancellationToken cancellationToken)
     {
-        logger.HandleBookmark(resource);
+        Logger.HandleBookmark(resource);
 
-        logger.BeginBookmark(resource);
+        Logger.BeginBookmark(resource);
 
-        await controller.BookmarkAsync(resource, _cancellationToken);
+        await _controller.BookmarkAsync(resource, cancellationToken);
         
         _changeTracker.TrackResourceGenerationAsHandled(resource);
 
-        logger.EndBookmark(resource);
+        Logger.EndBookmark(resource);
     }
 
     private async Task HandleFinalizeAsync(T resource, CancellationToken cancellationToken)
     {
-        logger.HandleFinalize(resource);
+        Logger.HandleFinalize(resource);
 
         if (!HasFinalizers(resource))
         {
-            logger.SkipFinalize(resource);
+            Logger.SkipFinalize(resource);
             return;
         }
 
-        logger.BeginFinalize(resource);
+        Logger.BeginFinalize(resource);
 
-        await controller.FinalizeAsync(resource, cancellationToken);
+        await _controller.FinalizeAsync(resource, cancellationToken);
 
         if (HasFinalizers(resource))
         {
-            logger.RemoveFinalizer(resource);
+            Logger.RemoveFinalizer(resource);
             await RemoveFinalizerAsync(resource, cancellationToken);
         }
 
-        logger.EndFinalize(resource);
+        Logger.EndFinalize(resource);
     }
 
     private async Task HandleDeletedEventAsync(T resource, CancellationToken cancellationToken)
     {
-        logger.HandleDelete(resource);
+        Logger.HandleDelete(resource);
 
         if (!HasFinalizers(resource))
         {
-            logger.SkipDelete(resource);
+            Logger.SkipDelete(resource);
             return;
         }
 
-        logger.BeginDelete(resource);
+        Logger.BeginDelete(resource);
 
-        await controller.DeleteAsync(resource, cancellationToken);
+        await _controller.DeleteAsync(resource, cancellationToken);
 
         _changeTracker.TrackResourceGenerationAsDeleted(resource);
 
-        logger.EndDelete(resource);
+        Logger.EndDelete(resource);
     }
 
     private Task<T> RemoveFinalizerAsync(T resource, CancellationToken cancellationToken)
@@ -205,10 +203,10 @@ internal class EventWatcher<T>(
 
     private async Task<T> ReplaceAsync(T resource, CancellationToken cancellationToken)
     {
-        logger.ReplaceResource(resource);
+        Logger.ReplaceResource(resource);
 
         // Replace the resource
-        var result = await client.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
+        var result = await Client.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
             resource,
             Crd.Group,
             Crd.ApiVersion,
@@ -222,36 +220,36 @@ internal class EventWatcher<T>(
     }
 
     private bool HasFinalizers(T resource)
-        => resource.Metadata.Finalizers?.Contains(Finalizer) == true;
+        => resource.Metadata.Finalizers?.Contains(Finalizer) ?? false;
 
     private async Task HandleAddOrModifyAsync(T resource, CancellationToken cancellationToken)
     {
-        logger.HandleAddOrModify(resource);
+        Logger.HandleAddOrModify(resource);
 
         if (!HasFinalizers(resource))
         {
-            logger.AddFinalizer(resource);
+            Logger.AddFinalizer(resource);
             await AddFinalizerAsync(resource, cancellationToken);
             return;
         }
 
         if (_changeTracker.IsResourceGenerationAlreadyHandled(resource))
         {
-            logger.SkipAddOrModify(resource);
+            Logger.SkipAddOrModify(resource);
             return;
         }
 
-        await controller.AddOrModifyAsync(resource, cancellationToken);
+        await _controller.AddOrModifyAsync(resource, cancellationToken);
         _changeTracker.TrackResourceGenerationAsHandled(resource);
 
-        logger.EndAddOrModify(resource);
+        Logger.EndAddOrModify(resource);
     }
 
     private void OnError(Exception exception)
     {
         if (_isRunning)
         {
-            logger.LogError(exception, "Watcher error");
+            Logger.LogError(exception, "Watcher error");
         }
     }
 }

@@ -1,29 +1,28 @@
 ﻿using K8sOperator.NET.Extensions;
-using Microsoft.Extensions.Logging;
 
 namespace K8sOperator.NET;
 
-internal class Operator(IServiceProvider serviceProvider, IControllerDataSource dataSource, ILoggerFactory loggerFactory)
+internal class Operator(IOperatorApplication app)
 {
     private readonly CancellationTokenSource _tokenSource = new();
-
-    public ILogger<Operator> Logger { get; } = loggerFactory.CreateLogger<Operator>();
-    public IEnumerable<IEventWatcher> Watchers
-        => dataSource.GetWatchers(serviceProvider) ?? [];
+    public string ArgumentName { get; } = "operator";
 
     public async Task RunAsync()
     {
-        Logger.StartOperator();
+        var watchers = app.DataSource.GetWatchers(app.ServiceProvider) ?? [];
+        var logger = app.Logger.CreateLogger("operator");
 
-        if (!Watchers.Any())
+        logger.StartOperator();
+
+        if (!watchers.Any())
         {
-            Logger.NoWatchers();
+            logger.NoWatchers();
             return;
         }
 
         var tasks = new List<Task>();
 
-        foreach (var watcher in Watchers)
+        foreach (var watcher in watchers)
         {
             tasks.Add(watcher.Start(_tokenSource.Token));
         }
