@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Builder;
+using System.Collections;
 
 namespace K8sOperator.NET;
 
@@ -72,20 +73,51 @@ internal class ControllerDatasource(List<object> metadata) : IControllerDataSour
         public required AddAfterProcessBuildConventionCollection FinallyConventions { get; init; }
 
     }
-    internal sealed class AddAfterProcessBuildConventionCollection :
-            List<Action<IControllerBuilder>>,
-            ICollection<Action<IControllerBuilder>>
+    internal sealed class AddAfterProcessBuildConventionCollection : ICollection<Action<IControllerBuilder>>
     {
+        private readonly List<Action<IControllerBuilder>> _actions = [];
         public bool IsReadOnly { get; set; }
 
-        void ICollection<Action<IControllerBuilder>>.Add(Action<IControllerBuilder> convention)
+        public int Count => ((ICollection<Action<IControllerBuilder>>)_actions).Count;
+
+        public void Add(Action<IControllerBuilder> convention)
         {
             if (IsReadOnly)
             {
                 throw new InvalidOperationException($"{nameof(ControllerDatasource)} can not be modified after build.");
             }
 
-            Add(convention);
+            _actions.Add(convention);
+        }
+
+        public void Clear()
+        {
+            ((ICollection<Action<IControllerBuilder>>)_actions).Clear();
+        }
+
+        public bool Contains(Action<IControllerBuilder> item)
+        {
+            return ((ICollection<Action<IControllerBuilder>>)_actions).Contains(item);
+        }
+
+        public void CopyTo(Action<IControllerBuilder>[] array, int arrayIndex)
+        {
+            ((ICollection<Action<IControllerBuilder>>)_actions).CopyTo(array, arrayIndex);
+        }
+
+        public IEnumerator<Action<IControllerBuilder>> GetEnumerator()
+        {
+            return ((IEnumerable<Action<IControllerBuilder>>)_actions).GetEnumerator();
+        }
+
+        public bool Remove(Action<IControllerBuilder> item)
+        {
+            return ((ICollection<Action<IControllerBuilder>>)_actions).Remove(item);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable)_actions).GetEnumerator();
         }
     }
 }

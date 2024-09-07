@@ -10,7 +10,7 @@
         },
         "Install": {
             "commandName": "Project",
-            "commandLineArgs": "install=true --export true",
+            "commandLineArgs": "install --export",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },

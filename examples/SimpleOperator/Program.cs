@@ -4,7 +4,8 @@ using K8sOperator.NET.Generators;
 using SimpleOperator.Projects;
 
 
-var builder = OperatorHost.CreateOperatorApplicationBuilder(args);
+var builder = OperatorHost.CreateOperatorApplicationBuilder(args)
+    .WithName("simple-operator");
 
 builder.AddController<TestItemController>()
     .WithFinalizer("testitem.local.finalizer"); 
@@ -14,10 +15,6 @@ builder.AddController<ProjectController>()
 
 var app = builder.Build();
 
-var writer = new StringWriter();
-
-await new Install(app, writer).RunAsync();
-
-Console.WriteLine(writer.ToString());
+app.AddInstall();
 
 await app.RunAsync();

@@ -1,6 +1,8 @@
 ﻿using K8sOperator.NET.Builder;
+using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace K8sOperator.NET;
 
@@ -20,9 +22,19 @@ public interface IOperatorApplication
     IConfiguration Configuration { get; }
 
     /// <summary>
+    /// The application's configured Logger Factory
+    /// </summary>
+    ILoggerFactory Logger { get; }
+
+    /// <summary>
     /// Gets the data source that provides access to Kubernetes controllers.
     /// </summary>
     IControllerDataSource DataSource { get; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    ICommandDatasource Commands { get; }
 
     /// <summary>
     /// Runs the operator application asynchronously, managing the lifecycle of Kubernetes resources.
@@ -47,15 +59,23 @@ public static class OperatorHost
 
 internal class OperatorHostApplication : IOperatorApplication
 {
+    private readonly string[] _args;
+
     internal OperatorHostApplication(
         IServiceProvider serviceProvider,
-        IConfiguration configuration,
-        IControllerDataSource dataSource
+        string[] args
     )
     {
         ServiceProvider = serviceProvider;
-        Configuration = configuration;
-        DataSource = dataSource;
+        Configuration = ServiceProvider.GetRequiredService<IConfiguration>();
+        DataSource = ServiceProvider.GetRequiredService<IControllerDataSource>();
+        Logger = ServiceProvider.GetRequiredService<ILoggerFactory>();
+        Commands = new CommandDatasource(serviceProvider);
+        
+        Commands.AddCommand(typeof(Operator));
+        Commands.AddCommand(typeof(Help), 999);
+
+        _args = args;
     }
 
     public IServiceProvider ServiceProvider { get; }
@@ -64,9 +84,29 @@ internal class OperatorHostApplication : IOperatorApplication
 
     public IControllerDataSource DataSource { get; }
 
+    public ICommandDatasource Commands { get; }
+
+    public ILoggerFactory Logger { get; }
+
     public async Task RunAsync()
     {
-        var oper = ActivatorUtilities.CreateInstance<Operator>(ServiceProvider, DataSource);
-        await oper.RunAsync();
+        var commands = Commands.GetCommands();
+        var command = commands
+            .FirstOrDefault(Filter)
+            ?.Command;
+
+        if(command == null) 
+        { 
+            await new Help(this).RunAsync([.._args]);
+            return;
+        }
+
+        await command.RunAsync(_args);
+    }
+
+    private bool Filter(OperatorCommand command)
+    {
+        var arg = command.Metadata.OfType<ICommandArgumentMetadata>().First().Argument;
+        return _args.Contains(arg) || _args.Contains($"--{arg}");
     }
 }
