@@ -10,6 +10,14 @@ public class ProjectController(ILoggerFactory logger) : Controller<Project>
     public override Task AddOrModifyAsync(Project resource, CancellationToken cancellationToken)
     {
         _logger.LogDebug("Controller AddOrModify received.");
+
+        resource.Metadata.Labels = new Dictionary<string, string>
+        {
+            { "created", "created" }
+        };
+
+        resource.Status.Result = "HEHE";
+
         return base.AddOrModifyAsync(resource, cancellationToken);
     }
 

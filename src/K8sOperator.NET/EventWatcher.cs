@@ -240,6 +240,9 @@ internal class EventWatcher<T>(IKubernetes client, Controller<T> controller, Lis
         }
 
         await _controller.AddOrModifyAsync(resource, cancellationToken);
+        
+        resource = await ReplaceAsync(resource, _cancellationToken);
+        
         _changeTracker.TrackResourceGenerationAsHandled(resource);
 
         Logger.EndAddOrModify(resource);

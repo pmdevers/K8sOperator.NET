@@ -10,7 +10,7 @@
         },
         "Install": {
             "commandName": "Project",
-            "commandLineArgs": "install",
+            "commandLineArgs": "install > ./install.yaml",
             "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
             },

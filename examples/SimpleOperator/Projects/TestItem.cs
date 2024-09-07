@@ -5,7 +5,7 @@ using static SimpleOperator.Projects.TestItem;
 
 namespace SimpleOperator.Projects;
 
-[KubernetesEntity(Group = "sonarcloud.io", ApiVersion = "v1alpha1", Kind = "TestItem", PluralName = "testitems")]
+[KubernetesEntity(Group = "operator.io", ApiVersion = "v1alpha1", Kind = "TestItem", PluralName = "testitems")]
 public class TestItem : CustomResource<TestItemSpec, TestItemStatus>
 {
     public class TestItemSpec
