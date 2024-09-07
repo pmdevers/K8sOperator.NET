@@ -1,16 +1,13 @@
-﻿using K8sOperator.NET.Builder;
-using K8sOperator.NET.Extensions;
-using K8sOperator.NET.Metadata;
+﻿using K8sOperator.NET.Extensions;
 
 namespace K8sOperator.NET;
 
-[OperatorArgument("operator", Description = "Starts the operator.")]
-internal class Operator(IOperatorApplication app) : IOperatorCommand
+internal class Operator(IOperatorApplication app)
 {
     private readonly CancellationTokenSource _tokenSource = new();
     public string ArgumentName { get; } = "operator";
 
-    public async Task RunAsync(string[] args)
+    public async Task RunAsync()
     {
         var watchers = app.DataSource.GetWatchers(app.ServiceProvider) ?? [];
         var logger = app.Logger.CreateLogger("operator");

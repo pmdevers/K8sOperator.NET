@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Builder;
+using K8sOperator.NET.Commands;
 using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,11 @@ namespace K8sOperator.NET;
 /// </summary>
 public interface IOperatorApplication
 {
+    /// <summary>
+    /// The name of the operator.
+    /// </summary>
+    string Name { get; }
+
     /// <summary>
     /// Gets the service provider that is used to resolve dependencies within the application.
     /// </summary>
@@ -72,8 +78,9 @@ internal class OperatorHostApplication : IOperatorApplication
         Logger = ServiceProvider.GetRequiredService<ILoggerFactory>();
         Commands = new CommandDatasource(serviceProvider);
         
-        Commands.AddCommand(typeof(Operator));
-        Commands.AddCommand(typeof(Help), 999);
+        Commands.AddCommand(typeof(OperatorCommand));
+        Commands.AddCommand(typeof(VersionCommand));
+        Commands.AddCommand(typeof(HelpCommand));
 
         _args = args;
     }
@@ -88,6 +95,8 @@ internal class OperatorHostApplication : IOperatorApplication
 
     public ILoggerFactory Logger { get; }
 
+    public string Name => DataSource.Metadata.OfType<IOperatorNameMetadata>().First().Name;
+
     public async Task RunAsync()
     {
         var commands = Commands.GetCommands();
@@ -97,14 +106,14 @@ internal class OperatorHostApplication : IOperatorApplication
 
         if(command == null) 
         { 
-            await new Help(this).RunAsync([.._args]);
+            await new HelpCommand(this).RunAsync([.._args]);
             return;
         }
 
         await command.RunAsync(_args);
     }
 
-    private bool Filter(OperatorCommand command)
+    private bool Filter(CommandInfo command)
     {
         var arg = command.Metadata.OfType<ICommandArgumentMetadata>().First().Argument;
         return _args.Contains(arg) || _args.Contains($"--{arg}");

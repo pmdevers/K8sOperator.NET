@@ -19,7 +19,7 @@ public interface ICommandDatasource
     /// 
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<OperatorCommand> GetCommands();
+    public IEnumerable<CommandInfo> GetCommands();
 }
 internal class CommandDatasource(IServiceProvider serviceProvider) : ICommandDatasource
 {
@@ -51,7 +51,7 @@ internal class CommandDatasource(IServiceProvider serviceProvider) : ICommandDat
         return new OperatorCommandConventionBuilder(conventions, finallyConventions);
     }
 
-    public IEnumerable<OperatorCommand> GetCommands()
+    public IEnumerable<CommandInfo> GetCommands()
     {
         foreach (var command in _commands.OrderBy(x => x.Order))
         {
@@ -82,7 +82,7 @@ internal class CommandDatasource(IServiceProvider serviceProvider) : ICommandDat
 /// <summary>
 /// 
 /// </summary>
-public class OperatorCommand
+public class CommandInfo
 {
     /// <summary>
     /// 
