@@ -14,9 +14,20 @@ public interface ILabelSelectorMetadata
     public string LabelSelector { get; }
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="labelSelector"></param>
 internal class LabelSelectorMetadata(string labelSelector) : ILabelSelectorMetadata
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public string LabelSelector => labelSelector;
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(LabelSelector), LabelSelector);
 }

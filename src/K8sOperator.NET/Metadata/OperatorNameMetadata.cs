@@ -11,10 +11,19 @@ public interface IOperatorNameMetadata
     string Name { get; }
 }
 
+
+/// <summary>
+/// Sets the name of the operator at assembly level.
+/// </summary>
+/// <param name="name"></param>
 [AttributeUsage(AttributeTargets.Assembly)]
-internal class OperatorNameAttribute(string name) : Attribute, IOperatorNameMetadata
+public class OperatorNameAttribute(string name) : Attribute, IOperatorNameMetadata
 {
+    /// <summary>
+    /// Default value of the attribute
+    /// </summary>
     public static OperatorNameAttribute Default => new("operator");
 
+    /// <inheritdoc/>
     public string Name => name;
 }

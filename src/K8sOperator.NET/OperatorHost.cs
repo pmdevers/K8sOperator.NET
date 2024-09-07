@@ -116,6 +116,6 @@ internal class OperatorHostApplication : IOperatorApplication
     private bool Filter(CommandInfo command)
     {
         var arg = command.Metadata.OfType<ICommandArgumentMetadata>().First().Argument;
-        return _args.Contains(arg) || _args.Contains($"--{arg}");
+        return _args.FirstOrDefault() == arg || _args.FirstOrDefault() == $"--{arg}";
     }
 }

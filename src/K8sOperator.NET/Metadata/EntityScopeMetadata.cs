@@ -29,13 +29,22 @@ public interface IEntityScopeMetadata
     EntityScope Scope { get; }
 }
 
+/// <summary>
+/// Sets the scope of the entity.
+/// </summary>
+/// <param name="scope"></param>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-internal class EntityScopeMetadata(EntityScope scope) : Attribute, IEntityScopeMetadata
+public class EntityScopeMetadata(EntityScope scope) : Attribute, IEntityScopeMetadata
 {
+    /// <summary>
+    /// Default value.
+    /// </summary>
     public const EntityScope Default = EntityScope.Namespaced;
 
+    /// <inheritdoc/>
     public EntityScope Scope => scope;
 
+    /// <inheritdoc/>
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(Scope), Scope);
 }
