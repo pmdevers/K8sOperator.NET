@@ -78,13 +78,13 @@ public class EventWatcherTests
             endpoints.MapListNamespacedCustomObjectWithHttpMessagesAsync<TestResource>();
         }))
         {
-            var client = new NamespacedKubernetesClient(server.GetMockedKubernetesClient(), _loggerFactory.CreateLogger<NamespacedKubernetesClient>());
+            var client = server.GetMockedKubernetesClient();
             var watcher = new EventWatcher<TestResource>(client, _controller, _metadata, _loggerFactory);
 
             await watcher.Start(cancellationToken);
         }
         
-        _loggerFactory.Received(2).CreateLogger(Arg.Any<string>());
+        _loggerFactory.Received(1).CreateLogger(Arg.Any<string>());
     }
 
     [Fact]
@@ -98,13 +98,13 @@ public class EventWatcherTests
             endpoints.MapReplaceNamespacedCustomObjectAsync();
         }))
         {
-            var client = new NamespacedKubernetesClient(server.GetMockedKubernetesClient(), _loggerFactory.CreateLogger<NamespacedKubernetesClient>());
+            var client = server.GetMockedKubernetesClient();
             var watcher = new EventWatcher<TestResource>(client, _controller, _metadata, _loggerFactory);
 
             await watcher.Start(cancellationToken);
         }
 
-        _loggerFactory.Received(2).CreateLogger(Arg.Any<string>());
+        _loggerFactory.Received(1).CreateLogger(Arg.Any<string>());
 
         _controller.Received(1).AddOrModifyAsync(Arg.Any<TestResource>(), Arg.Any<CancellationToken>());
     }
@@ -120,13 +120,13 @@ public class EventWatcherTests
             endpoints.MapReplaceNamespacedCustomObjectAsync();
         }))
         {
-            var client = new NamespacedKubernetesClient(server.GetMockedKubernetesClient(), _loggerFactory.CreateLogger<NamespacedKubernetesClient>());
+            var client = server.GetMockedKubernetesClient();
             var watcher = new EventWatcher<TestResource>(client, _controller, _metadata, _loggerFactory);
 
             await watcher.Start(cancellationToken);
         }
 
-        _loggerFactory.Received(2).CreateLogger(Arg.Any<string>());
+        _loggerFactory.Received(1).CreateLogger(Arg.Any<string>());
 
         _controller.Received(1).DeleteAsync(Arg.Any<TestResource>(), Arg.Any<CancellationToken>());
     }
@@ -142,13 +142,13 @@ public class EventWatcherTests
             endpoints.MapReplaceNamespacedCustomObjectAsync();
         }))
         {
-            var client = new NamespacedKubernetesClient(server.GetMockedKubernetesClient(), _loggerFactory.CreateLogger<NamespacedKubernetesClient>());
+            var client = server.GetMockedKubernetesClient();
             var watcher = new EventWatcher<TestResource>(client, _controller, _metadata, _loggerFactory);
 
             await watcher.Start(cancellationToken);
         }
 
-        _loggerFactory.Received(2).CreateLogger(Arg.Any<string>());
+        _loggerFactory.Received(1).CreateLogger(Arg.Any<string>());
 
         _controller.Received(1).FinalizeAsync(Arg.Any<TestResource>(), Arg.Any<CancellationToken>());
     }

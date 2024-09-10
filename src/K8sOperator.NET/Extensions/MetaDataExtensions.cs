@@ -61,12 +61,7 @@ public static class MetadataExtensions
     public static TBuilder WatchNamespace<TBuilder>(this TBuilder builder, string watchNamespace)
         where TBuilder : IControllerConventionBuilder
     {
-        builder.Finally(x => {
-            x.Metadata.RemoveAll(x => x.GetType() == typeof(WatchNamespaceMetadata));
-            x.Metadata.RemoveAll(x => x.GetType() == typeof(EntityScopeMetadata));
-            x.Metadata.Add(new WatchNamespaceMetadata(watchNamespace));
-            x.Metadata.Add(new EntityScopeMetadata(EntityScope.Namespaced));
-        });
+        builder.WithSingle(new WatchNamespaceMetadata(watchNamespace));
         return builder;
     }
 

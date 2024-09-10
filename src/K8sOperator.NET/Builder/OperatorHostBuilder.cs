@@ -3,7 +3,6 @@ using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
 using System.Data.Common;
 using System.Reflection;
 
@@ -92,10 +91,7 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         var dockerImage = Assembly.GetEntryAssembly()?.GetCustomAttribute<DockerImageAttribute>() 
             ?? DockerImageAttribute.Default;
 
-        var entityScope = Assembly.GetEntryAssembly()?.GetCustomAttribute<EntityScopeMetadata>()
-            ?? new EntityScopeMetadata(EntityScopeMetadata.Default);
-
-        _metadata.AddRange([operatorName, dockerImage, entityScope]);
+        _metadata.AddRange([operatorName, dockerImage]);
     }
     public IConfigurationManager Configuration => _configurationManager;
     public IServiceCollection Services => _serviceCollection;
