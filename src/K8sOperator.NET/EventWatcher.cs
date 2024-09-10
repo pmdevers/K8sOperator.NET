@@ -1,4 +1,5 @@
 ﻿using k8s;
+using k8s.Autorest;
 using k8s.Models;
 using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Metadata;
@@ -30,7 +31,7 @@ public interface IEventWatcher
     Task Start(CancellationToken cancellationToken);
 }
 
-internal class EventWatcher<T>(IKubernetes client, Controller<T> controller, List<object> metadata, ILoggerFactory loggerfactory) : IEventWatcher
+internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controller, List<object> metadata, ILoggerFactory loggerfactory) : IEventWatcher
     where T: CustomResource
 {
     private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().First();
@@ -43,7 +44,7 @@ internal class EventWatcher<T>(IKubernetes client, Controller<T> controller, Lis
     private CancellationToken _cancellationToken = CancellationToken.None;
     private readonly Controller<T> _controller = controller;
 
-    public IKubernetes Client { get; } = client;
+    public IKubernetesClient Client { get; } = client;
     public ILogger Logger { get; } = loggerfactory.CreateLogger("watcher");
     public IReadOnlyList<object> Metadata { get; } = metadata;
     public IController Controller => _controller;
@@ -53,17 +54,7 @@ internal class EventWatcher<T>(IKubernetes client, Controller<T> controller, Lis
         _cancellationToken = cancellationToken;
         _isRunning = true;
 
-        var response = Client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
-            Crd.Group,
-            Crd.ApiVersion,
-            Namespace,
-            Crd.PluralName,
-            watch: true,
-            allowWatchBookmarks: true,
-            labelSelector: LabelSelector,
-            timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
-            cancellationToken: cancellationToken
-        );
+        var response = Client.ListAsync<T>(LabelSelector, cancellationToken);
 
         Logger.BeginWatch(Namespace, Crd.PluralName, LabelSelector);
 
@@ -74,6 +65,7 @@ internal class EventWatcher<T>(IKubernetes client, Controller<T> controller, Lis
 
         Logger.EndWatch(Namespace, Crd.PluralName, LabelSelector);
     }
+    
 
     private void OnEvent(WatchEventType eventType, T customResource)
     {
@@ -206,15 +198,7 @@ internal class EventWatcher<T>(IKubernetes client, Controller<T> controller, Lis
         Logger.ReplaceResource(resource);
 
         // Replace the resource
-        var result = await Client.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
-            resource,
-            Crd.Group,
-            Crd.ApiVersion,
-            resource.Metadata.NamespaceProperty,
-            Crd.PluralName,
-            resource.Metadata.Name,
-            cancellationToken: cancellationToken
-        ).ConfigureAwait(false);
+        var result = await Client.ReplaceAsync(resource, cancellationToken);
 
         return result;
     }
