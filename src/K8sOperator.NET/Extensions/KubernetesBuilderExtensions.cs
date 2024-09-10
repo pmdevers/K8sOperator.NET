@@ -20,6 +20,7 @@ public static class KubernetesBuilderExtensions
         if (KubernetesClientConfiguration.IsInCluster())
         {
             config = KubernetesClientConfiguration.InClusterConfig();
+            config.SkipTlsVerify = true;
         }
         else
         {
