@@ -33,7 +33,7 @@ public interface IEntityScopeMetadata
 /// Sets the scope of the entity.
 /// </summary>
 /// <param name="scope"></param>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class EntityScopeMetadata(EntityScope scope) : Attribute, IEntityScopeMetadata
 {
     /// <summary>
