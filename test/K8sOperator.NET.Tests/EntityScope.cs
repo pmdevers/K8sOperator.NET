@@ -1,5 +1,8 @@
-﻿using K8sOperator.NET.Extensions;
+﻿using k8s;
+using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Metadata;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +20,9 @@ public class EntityScope_Tests
         builder.AddController<TestController>()
             .WatchNamespace("test");
 
+        builder.Services.RemoveAll<IKubernetes>();
+        builder.Services.AddTransient(x => Substitute.For<IKubernetes>());
+
         var app = builder.Build();
 
         var watcher = app.DataSource.GetWatchers(app.ServiceProvider).ToList();
@@ -28,6 +34,10 @@ public class EntityScope_Tests
     public void ClusterScope_should_use_NamespacedClient()
     {
         var builder = OperatorHost.CreateOperatorApplicationBuilder();
+
+        builder.Services.RemoveAll<IKubernetes>();
+        builder.Services.AddTransient(x => Substitute.For<IKubernetes>());
+
 
         builder.AddController<Test2Controller>();
         
