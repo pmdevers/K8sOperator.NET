@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <UserSecretsId>75af4ad7-a38b-4759-92a0-fa12fc4f56dd</UserSecretsId>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="KubernetesClient" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
