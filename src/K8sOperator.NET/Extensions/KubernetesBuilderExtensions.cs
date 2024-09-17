@@ -15,8 +15,8 @@ public static class KubernetesBuilderExtensions
     /// <returns></returns>
     public static IServiceCollection AddKubernetes(this IServiceCollection services)
     {
-        services.AddTransient<IKubernetes>(x => {
-            KubernetesClientConfiguration config;
+
+        KubernetesClientConfiguration config;
 
         if (KubernetesClientConfiguration.IsInCluster())
         {
@@ -27,6 +27,7 @@ public static class KubernetesBuilderExtensions
             config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
         }
 
+        services.AddSingleton<IKubernetes>(new Kubernetes(config));
         return services;
     }
 }
