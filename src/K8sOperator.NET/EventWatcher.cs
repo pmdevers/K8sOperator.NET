@@ -35,7 +35,6 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
     where T: CustomResource
 {
     private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().First();
-    private string Namespace => Metadata.OfType<IWatchNamespaceMetadata>().FirstOrDefault()?.Namespace ?? "default";
     private string LabelSelector => Metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
     private string Finalizer => Metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
     
@@ -56,14 +55,12 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
         var response = Client.ListAsync<T>(LabelSelector, cancellationToken);
 
-        Logger.BeginWatch(Namespace, Crd.PluralName, LabelSelector);
-
         await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
         {
             OnEvent(type, item);
         }
 
-        Logger.EndWatch(Namespace, Crd.PluralName, LabelSelector);
+        Logger.EndWatch(Crd.PluralName, LabelSelector);
     }
     
 

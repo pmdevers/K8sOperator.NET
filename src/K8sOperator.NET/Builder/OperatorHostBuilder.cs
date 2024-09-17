@@ -135,7 +135,12 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         _serviceCollection.AddLogging(config =>
         {
             config.AddConfiguration(Configuration.GetSection("Logging"));
-            config.AddConsole();
+            config.AddSimpleConsole(options =>
+            {
+                options.IncludeScopes = false;
+                options.SingleLine = true;
+                options.TimestampFormat = "HH:mm:ss ";
+            });
         });
     }
 

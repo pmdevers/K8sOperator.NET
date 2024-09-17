@@ -10,7 +10,7 @@ namespace K8sOperator.NET;
 
 internal interface IKubernetesClient
 {
-    Task<HttpOperationResponse<object>> ListAsync<T>(string labelselector, CancellationToken cancellationToken)
+    Task<HttpOperationResponse<object>> ListAsync<T>(string labelSelector, CancellationToken cancellationToken)
         where T : CustomResource;
     Task<T> ReplaceAsync<T>(T resource, CancellationToken cancellationToken)
         where T : CustomResource;
@@ -24,9 +24,11 @@ internal class NamespacedKubernetesClient(IKubernetes client, ILogger<Namespaced
     public ILogger Logger { get; } = logger;
     public string Namespace { get; } = ns;
 
-    public Task<HttpOperationResponse<object>> ListAsync<T>(string labelselector, CancellationToken cancellationToken) where T : CustomResource
+    public Task<HttpOperationResponse<object>> ListAsync<T>(string labelSelector, CancellationToken cancellationToken) where T : CustomResource
     {
         var info = typeof(T).GetCustomAttribute<KubernetesEntityAttribute>()!;
+
+        Logger.BeginWatch(Namespace, info.PluralName, labelSelector);
 
         var response = Client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
             info.Group,
@@ -35,7 +37,7 @@ internal class NamespacedKubernetesClient(IKubernetes client, ILogger<Namespaced
             info.PluralName,
             watch: true,
             allowWatchBookmarks: true,
-            labelSelector: labelselector,
+            labelSelector: labelSelector,
             timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
             cancellationToken: cancellationToken
         );
@@ -66,7 +68,7 @@ internal class NamespacedKubernetesClient(IKubernetes client, ILogger<Namespaced
 }
 
 
-internal class ClusterKubernetesClient(IKubernetes client, ILogger<NamespacedKubernetesClient> logger) : IKubernetesClient
+internal class ClusterKubernetesClient(IKubernetes client, ILogger<ClusterKubernetesClient> logger) : IKubernetesClient
 {
     public IKubernetes Client { get; } = client;
     public ILogger Logger { get; } = logger;
@@ -83,7 +85,6 @@ internal class ClusterKubernetesClient(IKubernetes client, ILogger<NamespacedKub
             resource,
             info.Group,
             info.ApiVersion,
-            resource.Metadata.NamespaceProperty,
             info.PluralName,
             resource.Metadata.Name,
             cancellationToken: cancellationToken
@@ -92,10 +93,12 @@ internal class ClusterKubernetesClient(IKubernetes client, ILogger<NamespacedKub
         return result;
     }
 
-    public Task<HttpOperationResponse<object>> ListAsync<T>(string labelselector, CancellationToken cancellationToken)
+    public Task<HttpOperationResponse<object>> ListAsync<T>(string labelSelector, CancellationToken cancellationToken)
         where T : CustomResource
     {
         var info = typeof(T).GetCustomAttribute<KubernetesEntityAttribute>()!;
+
+        Logger.BeginWatch("cluster-wide", info.PluralName, labelSelector);
 
         var response = Client.CustomObjects.ListClusterCustomObjectWithHttpMessagesAsync(
             info.Group,
@@ -103,7 +106,7 @@ internal class ClusterKubernetesClient(IKubernetes client, ILogger<NamespacedKub
             info.PluralName,
             watch: true,
             allowWatchBookmarks: true,
-            labelSelector: labelselector,
+            labelSelector: labelSelector,
             timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
             cancellationToken: cancellationToken
         );

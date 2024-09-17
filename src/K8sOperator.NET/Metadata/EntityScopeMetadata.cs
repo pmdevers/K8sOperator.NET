@@ -39,7 +39,7 @@ public class EntityScopeMetadata(EntityScope scope) : Attribute, IEntityScopeMet
     /// <summary>
     /// Default value.
     /// </summary>
-    public const EntityScope Default = EntityScope.Namespaced;
+    public const EntityScope Default = EntityScope.Cluster;
 
     /// <inheritdoc/>
     public EntityScope Scope => scope;
