@@ -1,4 +1,4 @@
-﻿using k8s;
+using k8s;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace K8sOperator.NET.Extensions;
@@ -15,20 +15,20 @@ public static class KubernetesBuilderExtensions
     /// <returns></returns>
     public static IServiceCollection AddKubernetes(this IServiceCollection services)
     {
-        KubernetesClientConfiguration config;
+        services.AddSingleton<IKubernetes>(x => {
 
-        if (KubernetesClientConfiguration.IsInCluster())
-        {
-            config = KubernetesClientConfiguration.InClusterConfig();
-            config.SkipTlsVerify = true;
-        }
-        else
-        {
-            config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
-        }
+            KubernetesClientConfiguration config;
 
-        services.AddSingleton<IKubernetes>(new Kubernetes(config));
-
+            if (KubernetesClientConfiguration.IsInCluster())
+            {
+                config = KubernetesClientConfiguration.InClusterConfig();
+            }
+            else
+            {
+                config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
+            }
+            return new Kubernetes(config);
+        });
         return services;
     }
 }

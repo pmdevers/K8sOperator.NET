@@ -33,13 +33,13 @@ public interface IEntityScopeMetadata
 /// Sets the scope of the entity.
 /// </summary>
 /// <param name="scope"></param>
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
 public class EntityScopeMetadata(EntityScope scope) : Attribute, IEntityScopeMetadata
 {
     /// <summary>
     /// Default value.
     /// </summary>
-    public const EntityScope Default = EntityScope.Namespaced;
+    public const EntityScope Default = EntityScope.Cluster;
 
     /// <inheritdoc/>
     public EntityScope Scope => scope;

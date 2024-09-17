@@ -43,9 +43,9 @@ internal static partial class LoggingExtensions
     [LoggerMessage(
         EventId = 5,
         Level = LogLevel.Information,
-        Message = "Begin watch {ns}/{plural} {labelselector}"
+        Message = "End watch {plural} {labelselector}"
     )]
-    public static partial void EndWatch(this ILogger logger, string ns, string plural, string labelselector);
+    public static partial void EndWatch(this ILogger logger, string plural, string labelselector);
 
     [LoggerMessage(
        EventId = 6,
