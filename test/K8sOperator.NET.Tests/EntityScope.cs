@@ -21,7 +21,7 @@ public class EntityScope_Tests
             .WatchNamespace("test");
 
         builder.Services.RemoveAll<IKubernetes>();
-        builder.Services.AddTransient(x => Substitute.For<IKubernetes>());
+        builder.Services.AddSingleton(x => Substitute.For<IKubernetes>());
 
         var app = builder.Build();
 
@@ -36,7 +36,7 @@ public class EntityScope_Tests
         var builder = OperatorHost.CreateOperatorApplicationBuilder();
 
         builder.Services.RemoveAll<IKubernetes>();
-        builder.Services.AddTransient(x => Substitute.For<IKubernetes>());
+        builder.Services.AddSingleton(x => Substitute.For<IKubernetes>());
 
 
         builder.AddController<Test2Controller>();
