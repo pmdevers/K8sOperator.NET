@@ -49,6 +49,7 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
     private static V1CustomResourceDefinition CreateCustomResourceDefinition(IEventWatcher item)
     {
         var group = item.Metadata.OfType<KubernetesEntityAttribute>().First();
+        var scope = item.Metadata.OfType<IEntityScopeMetadata>().First();
 
         var crdBuilder = new CustomResourceDefinitionBuilder();
         crdBuilder.WithName($"{group.PluralName}.{group.Group}")
@@ -60,7 +61,7 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
                  plural: group.PluralName,
                  singular: group.Kind.ToLower()
               )
-              .WithScope(EntityScope.Namespaced)
+              .WithScope(scope.Scope)
               .WithVersion(
                     group.ApiVersion,
                     schema =>
