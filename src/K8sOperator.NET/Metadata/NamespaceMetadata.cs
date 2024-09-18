@@ -18,7 +18,7 @@ public interface INamespaceMetadata
 /// Sets the Namespace
 /// </summary>
 /// <param name="ns"></param>
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class)]
 public sealed class NamespaceAttribute(string ns) : Attribute, INamespaceMetadata
 {
     /// <summary>
