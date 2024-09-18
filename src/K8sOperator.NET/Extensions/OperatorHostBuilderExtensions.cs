@@ -44,18 +44,16 @@ public static class OperatorHostBuilderExtensions
     /// <param name="builder">The operator application builder.</param>
     /// <param name="registery">The Docker registry. Defaults to "ghcr.io".</param>
     /// <param name="repository">The Docker repository.</param>
-    /// <param name="name">The name of the Docker image.</param>
     /// <param name="tag">The tag of the Docker image.</param>
     /// <returns>The configured operator application builder.</returns>
     public static IOperatorApplicationBuilder WithImage(this IOperatorApplicationBuilder builder,
         string registery = "ghcr.io",
         string repository = "",
-        string name = "",
         string tag = ""
         )
     {
         builder.Metadata.RemoveAll(x => x.GetType() == typeof(DockerImageAttribute));
-        builder.Metadata.Add(new DockerImageAttribute(registery, repository, name, tag));
+        builder.Metadata.Add(new DockerImageAttribute(registery, repository, tag));
         return builder;
     }
 
