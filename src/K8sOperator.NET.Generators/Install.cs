@@ -49,10 +49,11 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
     private static V1CustomResourceDefinition CreateCustomResourceDefinition(IEventWatcher item)
     {
         var group = item.Metadata.OfType<KubernetesEntityAttribute>().First();
-        var scope = item.Metadata.OfType<IEntityScopeMetadata>().First();
+        var scope = item.Metadata.OfType<INamespaceMetadata>().FirstOrDefault();
 
         var crdBuilder = new CustomResourceDefinitionBuilder();
-        crdBuilder.WithName($"{group.PluralName}.{group.Group}")
+        crdBuilder
+          .WithName($"{group.PluralName}.{group.Group}")
           .WithSpec()
               .WithGroup(group.Group)
               .WithNames(
@@ -61,7 +62,7 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
                  plural: group.PluralName,
                  singular: group.Kind.ToLower()
               )
-              .WithScope(scope.Scope)
+              .WithScope(scope == null ? EntityScope.Cluster : EntityScope.Namespaced)
               .WithVersion(
                     group.ApiVersion,
                     schema =>
@@ -76,12 +77,15 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
 
     private static V1Deployment CreateDeployment(IReadOnlyList<object> metadata)
     {
-        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name)!;
+        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.OperatorName)!;
         var image = metadata.TryGetValue<IImageMetadata, string>(x => x.GetImage())!;
+        var ns = metadata.TryGetValue<INamespaceMetadata, string>(x => x.Namespace);
 
         var deployment = DeploymentBuilder.Create();
 
-        deployment.WithName($"{name}-deployment")
+        deployment
+            .WithName($"{name}-deployment")
+            .WithNamespace(ns)
             .WithLabel("operator-deployment", name)
             .WithSpec()
                 .WithReplicas(1)
@@ -134,7 +138,7 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
 
     private static V1ClusterRoleBinding CreateClusterRoleBinding(IReadOnlyList<object> metadata)
     {
-        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name);
+        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.OperatorName);
 
         var clusterrolebinding = new ClusterRoleBindingBuilder()
             .WithName($"{name}-role-binding")
@@ -146,7 +150,7 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
 
     private static V1ClusterRole CreateClusterRole(IReadOnlyList<object> metadata, IEnumerable<IEventWatcher> watchers)
     {
-        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.Name);
+        var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.OperatorName);
 
         var clusterrole = new ClusterRoleBuilder()
                     .WithName($"{name}-role");

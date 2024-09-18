@@ -14,9 +14,19 @@ public interface IDescriptionMetadata
 }
 
 
-internal class DescriptionMetadata(string description) : IDescriptionMetadata
+/// <summary>
+/// 
+/// </summary>
+/// <param name="description"></param>
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+public class DescriptionAttribute(string description) : Attribute, IDescriptionMetadata
 {
-    public string Description => description;
+    /// <summary>
+    /// 
+    /// </summary>
+    public string Description { get; set; } = description;
+
+    /// <inheritdoc />
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(Description), Description);
 }

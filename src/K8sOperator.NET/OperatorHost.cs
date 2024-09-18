@@ -95,7 +95,7 @@ internal class OperatorHostApplication : IOperatorApplication
 
     public ILoggerFactory Logger { get; }
 
-    public string Name => DataSource.Metadata.OfType<IOperatorNameMetadata>().First().Name;
+    public string Name => DataSource.Metadata.OfType<IOperatorNameMetadata>().First().OperatorName;
 
     public async Task RunAsync()
     {

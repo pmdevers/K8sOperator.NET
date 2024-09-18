@@ -36,7 +36,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 {
     private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().First();
     private string LabelSelector => Metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
-    private string Finalizer => Metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Name ?? FinalizerMetadata.Default;
+    private string Finalizer => Metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Finalizer ?? FinalizerAttribute.Default;
     
     private readonly ChangeTracker _changeTracker = new();
     private bool _isRunning;

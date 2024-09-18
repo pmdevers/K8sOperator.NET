@@ -1,10 +1,13 @@
 name: Build
 on: 
   push:
+    branches:
+      - main
+    tags:
+    - 'v*'
   pull_request:
-  release:
-    types:
-      - published
+    branches:
+      - main
 env:
   GITHUB_FEED: https://nuget.pkg.github.com/pmdevers/index.json
   GITHUB_USER: pmdevers
@@ -15,20 +18,27 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
       - name: Setup dotnet
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x.x'
+
       - name: Build
         run: dotnet build -c Release
+
       - name: Test
         run: dotnet test -c Release
+
       - name: DotNet Pack
-        if: github.event_name == 'release'
+        if: startsWith(github.ref, 'refs/tags/')
         run: |
           arrTag=(${GITHUB_REF//\// })
           VERSION="${arrTag[2]}"
@@ -38,13 +48,33 @@ jobs:
           dotnet pack -v normal --no-restore -p:PackageVersion=$VERSION --configuration Release --output packages
    
       - name: Upload Artifact
-        if: github.event_name == 'release'
+        if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v4
         with:
           name: nupkg
           path: packages/*.nupkg
-          
+        
+      - name: Create release notes
+        uses: johnyherangi/create-release-notes@main
+        if: startsWith(github.ref, 'refs/tags/')
+        id: create-release-notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.create-release-notes.outputs.release-notes }}
+          draft: false
+          prerelease: false 
+
       - name: DotNet NuGet Push  
-        if: github.event_name == 'release'
+        if: startsWith(github.ref, 'refs/tags/')
         run: dotnet nuget push "packages/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key ${{ secrets.NUGET_KEY }} --skip-duplicate --no-symbols    
-    
+

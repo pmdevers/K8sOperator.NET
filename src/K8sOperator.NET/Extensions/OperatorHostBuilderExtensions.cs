@@ -26,6 +26,19 @@ public static class OperatorHostBuilderExtensions
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="ns"></param>
+    /// <returns></returns>
+    public static IOperatorApplicationBuilder WithNamespace(this IOperatorApplicationBuilder builder, string ns)
+    {
+        builder.Metadata.RemoveAll(x => x is NamespaceAttribute);
+        builder.Metadata.Add(new NamespaceAttribute(ns.ToLowerInvariant()));
+        return builder;
+    }
+
+    /// <summary>
     /// Sets the Docker image information for the operator application.
     /// </summary>
     /// <param name="builder">The operator application builder.</param>

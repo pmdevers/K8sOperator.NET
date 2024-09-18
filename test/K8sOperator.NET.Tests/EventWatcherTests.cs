@@ -62,9 +62,9 @@ public class EventWatcherTests
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(_logger);
         _metadata = [
             new KubernetesEntityAttribute { Group = "group", ApiVersion = "v1", Kind = "Test", PluralName = "tests" },
-            new WatchNamespaceMetadata("default"),
+            new NamespaceAttribute("default"),
             Substitute.For<ILabelSelectorMetadata>(),
-            new FinalizerMetadata("finalize")
+            new FinalizerAttribute("finalize")
         ];
     }
 

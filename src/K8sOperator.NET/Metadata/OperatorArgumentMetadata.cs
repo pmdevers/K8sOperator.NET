@@ -1,4 +1,6 @@
-﻿namespace K8sOperator.NET.Metadata;
+﻿using K8sOperator.NET.Helpers;
+
+namespace K8sOperator.NET.Metadata;
 
 /// <summary>
 /// 
@@ -37,4 +39,8 @@ public class OperatorArgumentAttribute(string argument) : Attribute, ICommandArg
     /// 
     /// </summary>
     public int Order { get; set; } = 1;
+
+    /// <inheritdoc />
+    public override string ToString()
+        => DebuggerHelpers.GetDebugText(nameof(Argument), Argument);
 }

@@ -25,13 +25,10 @@ internal class ControllerBuilder(IServiceProvider serviceProvider, Type controll
     public IController Build()
     {
         var controller = (IController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType);
-        var attribute = controller.ResourceType.GetCustomAttribute<KubernetesEntityAttribute>();
+        Metadata.AddRange(_controllerType.GetCustomAttributes());
 
-        if (attribute is not null)
-        {
-            Metadata.Add(attribute);
-        }
-
+        var attributes = controller.ResourceType.GetCustomAttributes();
+        Metadata.AddRange(attributes);
         return controller;
     }
 }

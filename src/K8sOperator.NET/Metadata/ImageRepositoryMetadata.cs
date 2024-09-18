@@ -1,4 +1,6 @@
-﻿namespace K8sOperator.NET.Metadata;
+﻿using K8sOperator.NET.Helpers;
+
+namespace K8sOperator.NET.Metadata;
 
 /// <summary>
 /// Interface representing metadata for a Docker image.
@@ -48,13 +50,18 @@ public class DockerImageAttribute(string registery, string repository, string im
     public static DockerImageAttribute Default => new("ghcr.io", "operator", "operator", "latest");
 
     /// <inheritdoc/>
-    public string Registery => registery;
+    public string Registery {get;set;} =  registery;
     /// <inheritdoc/>
-    public string Repository => repository;
+    public string Repository { get; set; } = repository;
     /// <inheritdoc/>
-    public string Name => imageName;
+    public string Name { get; set; } = imageName;
     /// <inheritdoc/>
-    public string Tag => tag;
+    public string Tag { get; set; } = tag;
     /// <inheritdoc/>
     public string GetImage() => $"{Registery}/{Repository}/{Name}:{Tag}";
+
+
+    /// <inheritdoc />
+    public override string ToString()
+        => DebuggerHelpers.GetDebugText("DockerImage", GetImage());
 }

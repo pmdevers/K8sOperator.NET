@@ -5,7 +5,8 @@ using SimpleOperator.Projects;
 
 
 var builder = OperatorHost.CreateOperatorApplicationBuilder(args)
-    .WithName("simple-operator");
+    .WithName("simple-operator")
+    .WithNamespace("simple-ops-system");
 
 builder.AddController<TestItemController>()
     .WithFinalizer("testitem.local.finalizer"); 

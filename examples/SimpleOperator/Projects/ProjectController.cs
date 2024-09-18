@@ -1,8 +1,9 @@
 ﻿using K8sOperator.NET;
+using K8sOperator.NET.Metadata;
 
 namespace SimpleOperator.Projects;
 
-
+[Namespace("default")]
 public class ProjectController(ILoggerFactory logger) : Controller<Project>
 {
     private readonly ILogger _logger = logger.CreateLogger<ProjectController>();
