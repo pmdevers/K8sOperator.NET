@@ -1,4 +1,6 @@
-﻿namespace K8sOperator.NET.Metadata;
+﻿using K8sOperator.NET.Helpers;
+
+namespace K8sOperator.NET.Metadata;
 
 /// <summary>
 /// Interface representing metadata for the name of an operator.
@@ -8,7 +10,7 @@ public interface IOperatorNameMetadata
     /// <summary>
     /// Gets the name of the operator.
     /// </summary>
-    string Name { get; }
+    string OperatorName { get; }
 }
 
 
@@ -25,5 +27,9 @@ public class OperatorNameAttribute(string name) : Attribute, IOperatorNameMetada
     public static OperatorNameAttribute Default => new("operator");
 
     /// <inheritdoc/>
-    public string Name => name;
+    public string OperatorName => name;
+
+    /// <inheritdoc />
+    public override string ToString()
+        => DebuggerHelpers.GetDebugText(nameof(OperatorName), OperatorName);
 }

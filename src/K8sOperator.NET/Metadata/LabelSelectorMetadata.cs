@@ -18,12 +18,13 @@ public interface ILabelSelectorMetadata
 /// 
 /// </summary>
 /// <param name="labelSelector"></param>
-internal class LabelSelectorMetadata(string labelSelector) : ILabelSelectorMetadata
+[AttributeUsage(AttributeTargets.Class)]
+public class LabelSelectorAttribute(string labelSelector) : Attribute, ILabelSelectorMetadata
 {
     /// <summary>
     /// 
     /// </summary>
-    public string LabelSelector => labelSelector;
+    public string LabelSelector { get; set; } = labelSelector;
     /// <summary>
     /// 
     /// </summary>

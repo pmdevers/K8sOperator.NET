@@ -26,6 +26,23 @@ public static class KubernetesObjectBuilderExtentions
     }
 
     /// <summary>
+    /// Sets the namespace of the kubernetes object
+    /// </summary>
+    /// <typeparam name="T">The type of the Kubernetes object.</typeparam>
+    /// <param name="builder">The builder instance.</param>
+    /// <param name="ns">The namespace to assign to the Kubernetes object.</param>
+    /// <returns>The configured builder.</returns>
+    public static IKubernetesObjectBuilder<T> WithNamespace<T>(this IKubernetesObjectBuilder<T> builder, string? ns)
+        where T : IMetadata<V1ObjectMeta> 
+    {
+        builder.Add(x => 
+        {
+            x.Metadata.SetNamespace(ns);
+        });
+        return builder;
+    }
+
+    /// <summary>
     /// Adds a label to the Kubernetes object.
     /// </summary>
     /// <typeparam name="T">The type of the Kubernetes object.</typeparam>

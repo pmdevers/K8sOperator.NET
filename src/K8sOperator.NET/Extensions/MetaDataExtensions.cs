@@ -58,14 +58,12 @@ public static class MetadataExtensions
     /// <param name="builder">The builder to configure.</param>
     /// <param name="watchNamespace">The namespace to watch.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WatchNamespace<TBuilder>(this TBuilder builder, string watchNamespace)
+    public static TBuilder ForNamespace<TBuilder>(this TBuilder builder, string watchNamespace)
         where TBuilder : IControllerConventionBuilder
     {
         builder.Finally(x => {
-            x.Metadata.RemoveAll(x => x.GetType() == typeof(WatchNamespaceMetadata));
-            x.Metadata.RemoveAll(x => x.GetType() == typeof(EntityScopeMetadata));
-            x.Metadata.Add(new WatchNamespaceMetadata(watchNamespace));
-            x.Metadata.Add(new EntityScopeMetadata(EntityScope.Namespaced));
+            x.Metadata.RemoveAll(x => x is NamespaceAttribute);
+            x.Metadata.Add(new NamespaceAttribute(watchNamespace));
         });
         return builder;
     }
@@ -80,7 +78,7 @@ public static class MetadataExtensions
     public static TBuilder WithLabel<TBuilder>(this TBuilder builder, string labelselector)
         where TBuilder : IControllerConventionBuilder
     {
-        builder.WithSingle(new LabelSelectorMetadata(labelselector));
+        builder.WithSingle(new LabelSelectorAttribute(labelselector));
         return builder;
     }
 
@@ -94,7 +92,7 @@ public static class MetadataExtensions
     public static TBuilder WithFinalizer<TBuilder>(this TBuilder builder, string finalizer)
         where TBuilder : IControllerConventionBuilder
     {
-        builder.WithMetadata(new FinalizerMetadata(finalizer));
+        builder.WithMetadata(new FinalizerAttribute(finalizer));
         return builder;
     }
 }

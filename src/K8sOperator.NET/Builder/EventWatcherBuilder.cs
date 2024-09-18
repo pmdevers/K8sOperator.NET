@@ -10,8 +10,8 @@ internal class EventWatcherBuilder(IServiceProvider serviceProvider, IController
         var watcherType = typeof(EventWatcher<>).MakeGenericType(controller.ResourceType);
         IKubernetesClient client = ActivatorUtilities.CreateInstance<ClusterKubernetesClient>(serviceProvider);
 
-        var clientScope = metadata.OfType<IEntityScopeMetadata>().FirstOrDefault();
-        if (clientScope?.Scope == EntityScope.Namespaced)
+        var ns = metadata.OfType<INamespaceMetadata>().FirstOrDefault();
+        if (ns is not null)
         { 
             client = ActivatorUtilities.CreateInstance<NamespacedKubernetesClient>(serviceProvider);
         }

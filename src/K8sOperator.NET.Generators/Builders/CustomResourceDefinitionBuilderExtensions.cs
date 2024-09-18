@@ -11,7 +11,7 @@ namespace K8sOperator.NET.Generators.Builders;
 /// <summary>
 /// Provides extension methods for building Kubernetes CustomResourceDefinitions.
 /// </summary>
-public static class CustomResourceDefinitionBuilderExtensions
+public static partial class CustomResourceDefinitionBuilderExtensions
 {
 
     /// <summary>

@@ -4,19 +4,34 @@ using System.Xml.Linq;
 namespace K8sOperator.NET.Metadata;
 
 /// <summary>
-/// Interface representing metadata for watching a specific Kubernetes namespace.
+/// Interface representing metadata for a specific Kubernetes namespace.
 /// </summary>
-public interface IWatchNamespaceMetadata
+public interface INamespaceMetadata
 {
     /// <summary>
-    /// Gets the namespace to watch for Kubernetes resources.
+    /// Gets the namespace to for Kubernetes resources.
     /// </summary>
     public string Namespace { get; }
 }
 
-internal class WatchNamespaceMetadata(string ns) : IWatchNamespaceMetadata
+/// <summary>
+/// Sets the Namespace
+/// </summary>
+/// <param name="ns"></param>
+[AttributeUsage(AttributeTargets.Class)]
+public sealed class NamespaceAttribute(string ns) : Attribute, INamespaceMetadata
 {
-    public string Namespace => ns;
+    /// <summary>
+    /// Default namespace
+    /// </summary>
+    public static NamespaceAttribute Default => new("default");
+
+    /// <summary>
+    /// The namespace
+    /// </summary>
+    public string Namespace { get; set;} = ns;
+
+    /// <inheritdoc />
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(Namespace), Namespace);
 }

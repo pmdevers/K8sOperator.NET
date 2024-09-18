@@ -18,7 +18,7 @@ public class EntityScope_Tests
         var builder = OperatorHost.CreateOperatorApplicationBuilder();
 
         builder.AddController<TestController>()
-            .WatchNamespace("test");
+            .ForNamespace("test");
 
         builder.Services.RemoveAll<IKubernetes>();
         builder.Services.AddSingleton(x => Substitute.For<IKubernetes>());
@@ -52,7 +52,6 @@ public class EntityScope_Tests
 
     private class Test2Controller : Controller<ClusterResource> { }
 
-    [EntityScopeMetadata(EntityScope.Cluster)]
     public class ClusterResource : TestResource
     {
 

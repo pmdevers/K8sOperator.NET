@@ -92,10 +92,10 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
         var dockerImage = Assembly.GetEntryAssembly()?.GetCustomAttribute<DockerImageAttribute>() 
             ?? DockerImageAttribute.Default;
 
-        var entityScope = Assembly.GetEntryAssembly()?.GetCustomAttribute<EntityScopeMetadata>()
-            ?? new EntityScopeMetadata(EntityScopeMetadata.Default);
+        var ns = Assembly.GetEntryAssembly()?.GetCustomAttribute<NamespaceAttribute>()
+            ?? NamespaceAttribute.Default;
 
-        _metadata.AddRange([operatorName, dockerImage, entityScope]);
+        _metadata.AddRange([operatorName, dockerImage, ns]);
     }
     public IConfigurationManager Configuration => _configurationManager;
     public IServiceCollection Services => _serviceCollection;
@@ -107,7 +107,7 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
     public IControllerConventionBuilder AddController(Type controllerType)
     {
         return _datasource.AddController(controllerType)
-            .WithMetadata([.. _metadata]);
+            .WithMetadata([.. _metadata.Where(x => x is not NamespaceAttribute)]);
     }
 
     public IOperatorApplication Build()

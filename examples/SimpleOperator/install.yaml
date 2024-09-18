@@ -9,7 +9,7 @@ spec:
     listKind: TestItemList
     plural: testitems
     singular: testitem
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1alpha1
     schema:
@@ -21,16 +21,9 @@ spec:
           spec:
             nullable: false
             properties:
-              scope:
-                enum:
-                - Namespaced
-                - Cluster
-                type: string
               string:
                 nullable: false
                 type: string
-            required:
-            - scope
             type: object
         type: object
     served: true
@@ -139,6 +132,7 @@ metadata:
   labels:
     operator-deployment: simple-operator
   name: simple-operator-deployment
+  namespace: simple-ops-system
 spec:
   replicas: 1
   revisionHistoryLimit: 0
