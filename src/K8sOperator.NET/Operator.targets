@@ -19,7 +19,7 @@
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.DockerImageAttribute">
 			<_Parameter1>$(ContainerRegistry)</_Parameter1>
 			<_Parameter2>$(ContainerRepository)</_Parameter2>
-			<_Parameter4>$(ContainerImageTag)$(ContainerFamily)</_Parameter4>
+			<_Parameter3>$(ContainerImageTag)$(ContainerFamily)</_Parameter3>
 		</AssemblyAttribute>
 	</ItemGroup>
 
