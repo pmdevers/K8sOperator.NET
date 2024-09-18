@@ -18,11 +18,6 @@ public interface IImageMetadata
     string Repository { get; }
 
     /// <summary>
-    /// Gets the name of the Docker image.
-    /// </summary>
-    string Name { get; }
-
-    /// <summary>
     /// Gets the tag of the Docker image.
     /// </summary>
     string Tag { get; }
@@ -39,26 +34,23 @@ public interface IImageMetadata
 /// </summary>
 /// <param name="registery">The registry of the image.</param>
 /// <param name="repository">The image repository name.</param>
-/// <param name="imageName">The name of the image.</param>
 /// <param name="tag">The tag of the image.</param>
 [AttributeUsage(AttributeTargets.Assembly)]
-public class DockerImageAttribute(string registery, string repository, string imageName, string tag) : Attribute, IImageMetadata
+public class DockerImageAttribute(string registery, string repository, string tag) : Attribute, IImageMetadata
 {
     /// <summary>
     /// Default docker image
     /// </summary>
-    public static DockerImageAttribute Default => new("ghcr.io", "operator", "operator", "latest");
+    public static DockerImageAttribute Default => new("ghcr.io", "operator/operator", "latest");
 
     /// <inheritdoc/>
     public string Registery {get;set;} =  registery;
     /// <inheritdoc/>
     public string Repository { get; set; } = repository;
     /// <inheritdoc/>
-    public string Name { get; set; } = imageName;
-    /// <inheritdoc/>
     public string Tag { get; set; } = tag;
     /// <inheritdoc/>
-    public string GetImage() => $"{Registery}/{Repository}/{Name}:{Tag}";
+    public string GetImage() => $"{Registery}/{Repository}:{Tag}";
 
 
     /// <inheritdoc />

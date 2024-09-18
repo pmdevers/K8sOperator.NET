@@ -3,20 +3,23 @@
 	<PropertyGroup>
 		<PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.0</PackageVersion>
 		<OperatorName>$(MSBuildProjectName.Replace(" ", "_").ToLower())</OperatorName>
-		<DockerImageRegistery>ghcr.io</DockerImageRegistery>
-		<DockerImageRepository>$(Company)</DockerImageRepository>
-		<DockerImageName>$(OperatorName)</DockerImageName>
-		<DockerImageTag>$(PackageVersion)</DockerImageTag>
+
+		<ContainerRegistry>ghcr.io</ContainerRegistry>
+		<ContainerRepository>$(Company)/$(OperatorName)</ContainerRepository>
+		<ContainerImageTag>$(PackageVersion)</ContainerImageTag>
+		<ContainerFamily></ContainerFamily>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.OperatorNameAttribute">
 			<_Parameter1>$(OperatorName)</_Parameter1>
 		</AssemblyAttribute>
+		<AssemblyAttribute Include="K8sOperator.NET.Metadata.NamespaceAttribute">
+			<_Parameter1>$(OperatorName)-system</_Parameter1>
+		</AssemblyAttribute>
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.DockerImageAttribute">
-			<_Parameter1>$(DockerImageRegistery)</_Parameter1>
-			<_Parameter2>$(DockerImageRepository)</_Parameter2>
-			<_Parameter3>$(DockerImageName)</_Parameter3>
-			<_Parameter4>$(DockerImageTag)</_Parameter4>
+			<_Parameter1>$(ContainerRegistry)</_Parameter1>
+			<_Parameter2>$(ContainerRepository)</_Parameter2>
+			<_Parameter4>$(ContainerImageTag)$(ContainerFamily)</_Parameter4>
 		</AssemblyAttribute>
 	</ItemGroup>
 

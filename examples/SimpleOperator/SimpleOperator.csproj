@@ -6,6 +6,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Company>pmdevers</Company>
 
+
+    <ContainerRegistry>ghcr.io</ContainerRegistry>
+    <ContainerRepository>pmdevers/simple-operator</ContainerRepository>
+    <ContainerImageTag>1.0.0</ContainerImageTag>
+    <ContainerFamily>-alpha0011</ContainerFamily>
+    
   </PropertyGroup>
 
   <ItemGroup>
