@@ -18,6 +18,11 @@ public interface IOperatorApplication
     string Name { get; }
 
     /// <summary>
+    /// The version number of the operator
+    /// </summary>
+    public string Version { get; }
+
+    /// <summary>
     /// Gets the service provider that is used to resolve dependencies within the application.
     /// </summary>
     IServiceProvider ServiceProvider { get; }
@@ -96,6 +101,7 @@ internal class OperatorHostApplication : IOperatorApplication
     public ILoggerFactory Logger { get; }
 
     public string Name => DataSource.Metadata.OfType<IOperatorNameMetadata>().First().OperatorName;
+    public string Version => DataSource.Metadata.OfType<IImageMetadata>().First().Tag;
 
     public async Task RunAsync()
     {

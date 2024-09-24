@@ -1,6 +1,5 @@
 ﻿using K8sOperator.NET.Builder;
 using K8sOperator.NET.Metadata;
-using System.Reflection;
 
 namespace K8sOperator.NET.Commands;
 
@@ -9,7 +8,7 @@ internal class VersionCommand(IOperatorApplication app) : IOperatorCommand
 {
     public Task RunAsync(string[] args)
     {
-        Console.WriteLine($"{app.Name} version {Assembly.GetEntryAssembly()?.GetName().Version}");
+        Console.WriteLine($"{app.Name} version {app.Version}.");
 
         return Task.CompletedTask;
     }
