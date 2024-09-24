@@ -109,7 +109,7 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
                             }))
                         .WithTerminationGracePeriodSeconds(10)
                         .AddContainer()
-                            .AddEnvFromObjectField("test", x => x.FieldPath = "metadata.namespace")
+                            .AddEnvFromObjectField("NAMESPACE", x => x.FieldPath = "metadata.namespace")
                             .WithSecurityContext(x =>
                             {
                                 x.AllowPrivilegeEscalation(false);
