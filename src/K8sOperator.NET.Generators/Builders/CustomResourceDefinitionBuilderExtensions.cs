@@ -219,9 +219,10 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <typeparam name="TBuilder">The type of the builder.</typeparam>
     /// <param name="builder">The builder instance.</param>
     /// <param name="type">The type of the schema property.</param>
+    /// <param name="nullable"></param>
     /// <returns>The configured builder.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the provided type is not valid.</exception>
-    public static TBuilder OfType<TBuilder>(this TBuilder builder, Type type)
+    public static TBuilder OfType<TBuilder>(this TBuilder builder, Type type, bool? nullable = false)
         where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
     {
         if (type.FullName == "System.String")
@@ -229,14 +230,44 @@ public static partial class CustomResourceDefinitionBuilderExtensions
             builder.Add(x =>
             {
                 x.Type = "string";
-                x.Nullable = false;
+                x.Nullable = nullable;
+            });
+            return builder;
+        }
+
+        if (type.FullName == "System.Int32")
+        {
+            builder.Add(x =>
+            {
+                x.Type = "integer";
+                x.Nullable = nullable;
+            });
+            return builder;
+        }
+
+        if (type.FullName == "System.Int64")
+        {
+            builder.Add(x =>
+            {
+                x.Type = "integer";
+                x.Nullable = nullable;
+            });
+            return builder;
+        }
+
+        if (type.FullName == "System.Boolean")
+        {
+            builder.Add(x =>
+            {
+                x.Type = "boolean";
+                x.Nullable = nullable;
             });
             return builder;
         }
 
         if (type.Name == typeof(Nullable<>).Name && type.GenericTypeArguments.Length == 1)
         {
-            return builder.OfType(type.GenericTypeArguments[0]);
+            return builder.OfType(type.GenericTypeArguments[0], true);
         }
 
         return type.BaseType?.FullName switch
