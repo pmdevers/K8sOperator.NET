@@ -35,7 +35,7 @@ public abstract class CustomResource<TSpec> : CustomResource, ISpec<TSpec>
 /// </summary>
 /// <typeparam name="TSpec">The type of the specification.</typeparam>
 /// <typeparam name="TStatus">The type of the status.</typeparam>
-public abstract class CustomResource<TSpec, TStatus> : CustomResource<TSpec>, IStatus<TStatus>
+public abstract class CustomResource<TSpec, TStatus> : CustomResource<TSpec>, IStatus<TStatus?>
     where TSpec : new()
     where TStatus : new()
 {
@@ -43,5 +43,5 @@ public abstract class CustomResource<TSpec, TStatus> : CustomResource<TSpec>, IS
     /// Gets or sets the status for the custom resource.
     /// </summary>
     [JsonPropertyName("status")]
-    public TStatus Status { get; set; } = new();
+    public TStatus? Status { get; set; }
 }
