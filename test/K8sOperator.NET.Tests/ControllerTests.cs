@@ -1,7 +1,4 @@
-﻿using IdentityModel.Client;
-using K8sOperator.NET.Models;
-
-namespace K8sOperator.NET.Tests;
+﻿namespace K8sOperator.NET.Tests;
 
 public class ControllerTests
 {
