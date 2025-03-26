@@ -1,4 +1,5 @@
-﻿using K8sOperator.NET.Models;
+﻿using IdentityModel.Client;
+using K8sOperator.NET.Models;
 
 namespace K8sOperator.NET.Tests;
 
@@ -79,8 +80,9 @@ public class ControllerTests
         // Act
         await derivedController.AddOrModifyAsync(resource, CancellationToken.None);
 
-        // Assert
-        resource.Status.Status.Should().Be("Changed");
+        
+        resource.Status.Should().NotBeNull();
+        resource.Status?.Status.Should().Be("Changed");
     }
 
     // You can also extend these tests for DeleteAsync, FinalizeAsync, BookmarkAsync, and ErrorAsync
