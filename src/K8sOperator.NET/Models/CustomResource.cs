@@ -37,7 +37,7 @@ public abstract class CustomResource<TSpec> : CustomResource, ISpec<TSpec>
 /// <typeparam name="TStatus">The type of the status.</typeparam>
 public abstract class CustomResource<TSpec, TStatus> : CustomResource<TSpec>, IStatus<TStatus?>
     where TSpec : new()
-    where TStatus : new()
+    where TStatus : class
 {
     /// <summary>
     /// Gets or sets the status for the custom resource.
