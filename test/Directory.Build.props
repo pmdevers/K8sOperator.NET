@@ -12,7 +12,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="coverlet.collector" />
-		<PackageReference Include="FluentAssertions"  />
+		<PackageReference Include="AwesomeAssertions"  />
     <PackageReference Include="NSubstitute" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk"  />
 		<PackageReference Include="xunit"  />
@@ -25,7 +25,7 @@
 
 	<ItemGroup>
 		<Using Include="Xunit" />
-		<Using Include="FluentAssertions" />
+		<Using Include="AwesomeAssertions" />
 		<Using Include="NSubstitute" />
 	</ItemGroup>
 </Project>
