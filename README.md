@@ -31,12 +31,14 @@ To install the package, use the following command in your .NET Core project:
 
 ```bash
 dotnet add package K8sOperator.NET
+dotnet add package K8sOperator.NET.Generators
 ```
 
 Alternatively, you can add it manually to your `.csproj` file:
 
 ```xml
 <PackageReference Include="K8sOperator.NET" Version="0.1.0" />
+<PackageReference Include="K8sOperator.NET.Generators" Version="0.1.0" />
 ```
 
 ## Usage
@@ -48,22 +50,72 @@ Here are some basic examples of how to use the library:
 ```csharp
 using K8sOperator.NET;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = OperatorHost.CreateOperatorApplicationBuilder(args);
 
+builder.AddController<ProjectController>()
+    .WithFinalizer("project.local.finalizer");
+
+var app = builder.Build();
+
+app.AddInstall();
+
+await app.RunAsync();
 
 ```
 
-### Use
+### add custom launchSettings.json
 
-```csharp
+```json
 
-var test = new string();
+{
+    "profiles": {
+        "Operator": {
+            "commandName": "Project",
+            "commandLineArgs": "operator",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Install": {
+            "commandName": "Project",
+            "commandLineArgs": "install > ./install.yaml",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Help": {
+            "commandName": "Project",
+            "commandLineArgs": "",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Version": {
+            "commandName": "Project",
+            "commandLineArgs": "version",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        }
+    },
+   "$schema": "http://json.schemastore.org/launchsettings.json"
+}
 
 ```
 
 ## Configuration
 
-[TODO]
+By running the `Install` profile will create the install.yaml file in the root of the project. This file can be used to install the operator in a Kubernetes cluster.
+
+Run the following command to install the operator:
+```bash
+kubectl apply -f install.yaml
+```
+
 
 ## Contributing
 
