@@ -87,7 +87,7 @@ internal class OperatorApplicationBuilder : IOperatorApplicationBuilder, IContro
     private void ConfigureMetadata()
     {
         var operatorName = Assembly.GetEntryAssembly()?.GetCustomAttribute<OperatorNameAttribute>()
-            ?? OperatorNameAttribute.Default;
+            ?? new OperatorNameAttribute(Assembly.GetEntryAssembly()?.GetName()?.Name);
         
         var dockerImage = Assembly.GetEntryAssembly()?.GetCustomAttribute<DockerImageAttribute>() 
             ?? DockerImageAttribute.Default;

@@ -19,7 +19,7 @@ public interface IOperatorNameMetadata
 /// </summary>
 /// <param name="name"></param>
 [AttributeUsage(AttributeTargets.Assembly)]
-public class OperatorNameAttribute(string name) : Attribute, IOperatorNameMetadata
+public class OperatorNameAttribute(string? name) : Attribute, IOperatorNameMetadata
 {
     /// <summary>
     /// Default value of the attribute
@@ -27,7 +27,7 @@ public class OperatorNameAttribute(string name) : Attribute, IOperatorNameMetada
     public static OperatorNameAttribute Default => new("operator");
 
     /// <inheritdoc/>
-    public string OperatorName => name;
+    public string OperatorName => name ?? Default.OperatorName;
 
     /// <inheritdoc />
     public override string ToString()
