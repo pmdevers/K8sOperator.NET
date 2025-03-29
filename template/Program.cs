@@ -1,6 +1,8 @@
 ﻿using K8sOperator.NET;
+using K8sOperator.NET.Builder;
 using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Generators;
+using K8sOperator.NET.ProjectTemplate.Commands;
 using K8sOperator.NET.ProjectTemplate.Todos;
 
 var builder = OperatorHost.CreateOperatorApplicationBuilder(args)
@@ -12,5 +14,6 @@ builder.AddController<TodoController>()
 var app = builder.Build();
 
 app.AddInstall();
+app.AddCommand<CreateCommand>();
 
 await app.RunAsync();

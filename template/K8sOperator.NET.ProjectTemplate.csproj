@@ -2,19 +2,18 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
     <EnableSdkContainerDebugging>True</EnableSdkContainerDebugging>
     <ContainerBaseImage>mcr.microsoft.com/dotnet/aspnet:8.0</ContainerBaseImage>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <AssemblyName>k8soperator</AssemblyName>
 
-    <ContainerRegistry>aabprodweuacr01.azurecr.io</ContainerRegistry>
-    <ContainerRepository>tjip-operator/tjip-operator</ContainerRepository>
+    <ContainerRegistry>docker.io</ContainerRegistry>
+    <ContainerRepository>todos/operator</ContainerRepository>
     <ContainerImageTag>1.0.0</ContainerImageTag>
-    <ContainerFamily>-alpha0011</ContainerFamily>
-    <DockerfileContext>..\..</DockerfileContext>
-
-    <Version>0.0.1-alpha0018</Version>
+    <ContainerFamily>-alpine</ContainerFamily>
+    <DockerfileContext>.</DockerfileContext>
     
   </PropertyGroup>
 
@@ -23,10 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="K8sOperator.NET" />
-    <PackageReference Include="K8sOperator.NET.Generators" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
-    <PackageReference Include="System.Text.Encodings.Web" />
+    <PackageReference Include="K8sOperator.NET.Generators" Version="0.0.1-alpha0018" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
   </ItemGroup>
 
 </Project>

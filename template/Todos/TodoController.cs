@@ -1,4 +1,7 @@
 ﻿using K8sOperator.NET.Metadata;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace K8sOperator.NET.ProjectTemplate.Todos;
 
