@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Patrick Evers",
+    "classifications": [ "K8s", "Operator", ".Net" ],
+    "identity": "K8sOperator.NET.ProjectTemplate",
+    "name": "K8s Operator for .NET",
+    "shortName": "k8s-opr",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "K8sOperator.NET.ProjectTemplate"
+}

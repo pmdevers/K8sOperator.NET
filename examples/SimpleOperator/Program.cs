@@ -5,7 +5,6 @@ using SimpleOperator.Projects;
 
 
 var builder = OperatorHost.CreateOperatorApplicationBuilder(args)
-    //.WithName("simple-operator")
     .WithNamespace("simple-ops-system");
 
 builder.AddController<TestItemController>()

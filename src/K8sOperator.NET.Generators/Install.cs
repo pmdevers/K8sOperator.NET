@@ -174,11 +174,11 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
         {
             clusterrole.AddRule()
                     .WithGroups(item.Key)
-                    .WithResources(item.Select(x => x.PluralName).ToArray())
+                    .WithResources([.. item.Select(x => x.PluralName)])
                     .WithVerbs("*");
             clusterrole.AddRule()
                     .WithGroups(item.Key)
-                    .WithResources(item.Select(x => $"{x.PluralName}/status").ToArray())
+                    .WithResources([.. item.Select(x => $"{x.PluralName}/status")])
                     .WithVerbs("get", "update", "patch");
         }
 

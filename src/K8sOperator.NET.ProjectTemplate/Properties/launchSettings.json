@@ -1,0 +1,47 @@
+{
+    "profiles": {
+        "Operator": {
+            "commandName": "Project",
+            "commandLineArgs": "operator",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Install": {
+            "commandName": "Project",
+            "commandLineArgs": "install > ./install.yaml",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Help": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Version": {
+            "commandName": "Project",
+            "commandLineArgs": "version",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Create": {
+            "commandName": "Project",
+            "commandLineArgs": "create",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "dotnetRunMessages": true
+        },
+        "Container (Dockerfile)": {
+            "commandName": "Docker"
+        }
+    },
+    "$schema": "http://json.schemastore.org/launchsettings.json"
+}
