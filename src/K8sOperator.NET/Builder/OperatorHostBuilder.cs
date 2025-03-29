@@ -3,8 +3,6 @@ using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Data.Common;
 using System.Reflection;
 
 namespace K8sOperator.NET.Builder;
