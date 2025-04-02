@@ -120,6 +120,8 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
                             })
                             .WithName(name)
                             .WithImage(image)
+                            .WithCommand(name)
+                            .WithArgs("operator")
                             .WithResources(
                                 limits: x =>
                                 {

@@ -155,6 +155,34 @@ public static class DeploymentBuilderExtensions
     }
 
     /// <summary>
+    /// Sets the command to be run by the container.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder.</typeparam>
+    /// <param name="builder">The builder instance.</param>
+    /// <param name="command">The command to be run by the container.</param>
+    /// <returns>The configured builder.</returns>
+    public static TBuilder WithCommand<TBuilder>(this TBuilder builder, params string[] command)
+       where TBuilder : IKubernetesObjectBuilder<V1Container>
+    {
+        builder.Add(x => x.Command = command);
+        return builder;
+    }
+
+    /// <summary>
+    /// Sets the arguments to be passed to the container's entrypoint.
+    /// </summary>
+    /// <typeparam name="TBuilder">The type of the builder.</typeparam>
+    /// <param name="builder">The builder instance.</param>
+    /// <param name="args">The arguments to be passed to the container's entrypoint.</param>
+    /// <returns>The configured builder.</returns>
+    public static TBuilder WithArgs<TBuilder>(this TBuilder builder, params string[] args)
+       where TBuilder : IKubernetesObjectBuilder<V1Container>
+    {
+        builder.Add(x => x.Args = args);
+        return builder;
+    }
+
+    /// <summary>
     /// Configures the resource requirements for the container.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the builder.</typeparam>
