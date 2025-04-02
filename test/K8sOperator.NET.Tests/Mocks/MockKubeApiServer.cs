@@ -1,14 +1,10 @@
 ﻿using K8sOperator.NET.Tests.Logging;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using k8s;
-using k8s.Models;
-using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using System.Net;
 using Microsoft.AspNetCore;
