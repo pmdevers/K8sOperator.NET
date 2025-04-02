@@ -5,7 +5,7 @@
 		<OperatorName Condition=" '$(OperatorName)' == '' ">$(MSBuildProjectName.Replace(" ", "_").ToLower())</OperatorName>
 
 		<ContainerRegistry Condition=" '$(ContainerRegistry)' == '' ">ghcr.io</ContainerRegistry>
-		<ContainerRepository Condition=" '$(ContainerRepository)' == '' ">$(Company)/$(OperatorName)</ContainerRepository>
+		<ContainerRepository Condition=" '$(ContainerRepository)' == '' ">$(OperatorName)</ContainerRepository>
 		<ContainerImageTag Condition=" '$(ContainerImageTag)' == '' ">$(PackageVersion)</ContainerImageTag>
 		<ContainerFamily Condition=" '$(ContainerFamily)' == '' "></ContainerFamily>
 	</PropertyGroup>
