@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-
-namespace K8sOperator.NET.Tests;
+﻿namespace K8sOperator.NET.Tests;
 
 public class ControllerTests
 {
