@@ -141,11 +141,12 @@ public class InstallCommand(IOperatorApplication app) : IOperatorCommand
     private static V1ClusterRoleBinding CreateClusterRoleBinding(IReadOnlyList<object> metadata)
     {
         var name = metadata.TryGetValue<IOperatorNameMetadata, string>(x => x.OperatorName);
+        var ns = metadata.TryGetValue<INamespaceMetadata, string>(x => x.Namespace);
 
         var clusterrolebinding = new ClusterRoleBindingBuilder()
             .WithName($"{name}-role-binding")
             .WithRoleRef("rbac.authorization.k8s.io", "ClusterRole", $"{name}-role")
-            .WithSubject(kind: "ServiceAccount", name: "default", ns: "system");
+            .WithSubject(kind: "ServiceAccount", name: "default", ns: ns);
 
         return clusterrolebinding.Build();
     }
