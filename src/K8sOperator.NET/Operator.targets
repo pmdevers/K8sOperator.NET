@@ -2,12 +2,12 @@
 <Project>
 	<PropertyGroup>
 		<PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.0</PackageVersion>
-		<OperatorName>$(MSBuildProjectName.Replace(" ", "_").ToLower())</OperatorName>
+		<OperatorName Condition=" '$(OperatorName)' == '' ">$(MSBuildProjectName.Replace(" ", "_").ToLower())</OperatorName>
 
-		<ContainerRegistry>ghcr.io</ContainerRegistry>
-		<ContainerRepository>$(Company)/$(OperatorName)</ContainerRepository>
-		<ContainerImageTag>$(PackageVersion)</ContainerImageTag>
-		<ContainerFamily></ContainerFamily>
+		<ContainerRegistry Condition=" '$(ContainerRegistry)' == '' ">ghcr.io</ContainerRegistry>
+		<ContainerRepository Condition=" '$(ContainerRepository)' == '' ">$(Company)/$(OperatorName)</ContainerRepository>
+		<ContainerImageTag Condition=" '$(ContainerImageTag)' == '' ">$(PackageVersion)</ContainerImageTag>
+		<ContainerFamily Condition=" '$(ContainerFamily)' == '' "></ContainerFamily>
 	</PropertyGroup>
 	<ItemGroup>
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.OperatorNameAttribute">
