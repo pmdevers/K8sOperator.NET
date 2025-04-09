@@ -36,9 +36,9 @@ internal static partial class LoggingExtensions
     [LoggerMessage(
         EventId = 4,
         Level = LogLevel.Information,
-        Message = "Begin watch {ns}/{plural} {labelselector}"
+        Message = "Begin watch {plural} {labelselector}"
     )]
-    public static partial void BeginWatch(this ILogger logger, string ns, string plural, string labelselector);
+    public static partial void BeginWatch(this ILogger logger, string plural, string labelselector);
 
     [LoggerMessage(
         EventId = 5,
@@ -186,5 +186,12 @@ internal static partial class LoggingExtensions
         Level = LogLevel.Information,
         Message = "Watcher Error {message}")]
     public static partial void WatcherError(this ILogger logger, string message);
+
+    [LoggerMessage(
+        EventId = 29,
+        Level = LogLevel.Information,
+        Message = "ListAsync {ns}/{plural} {labelselector}"
+    )]
+    public static partial void ListAsync(this ILogger logger, string ns, string plural, string labelselector);
 
 }

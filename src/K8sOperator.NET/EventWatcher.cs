@@ -53,6 +53,8 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         _cancellationToken = cancellationToken;
         _isRunning = true;
 
+        Logger.BeginWatch(Crd.PluralName, LabelSelector);
+
         while (_isRunning && !_cancellationToken.IsCancellationRequested)
         {
             try
