@@ -52,12 +52,14 @@ public class EventWatcherTests
 
     private readonly ITestOutputHelper _testOutput;
     private readonly Controller<TestResource> _controller = Substitute.For<Controller<TestResource>>();
+    private readonly CancellationTokenSource _tokenSource;
     private readonly ILoggerFactory _loggerFactory = Substitute.For<ILoggerFactory>();
     private readonly ILogger _logger = Substitute.For<ILogger>();
     private readonly List<object> _metadata;
 
     public EventWatcherTests(ITestOutputHelper testOutput)
     {
+        _tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2));
         _testOutput = testOutput;
         _loggerFactory.CreateLogger(Arg.Any<string>()).Returns(_logger);
         _metadata = [
@@ -71,8 +73,8 @@ public class EventWatcherTests
     [Fact]
     public async Task Start_Should_StartWatchAndLogStart()
     {
-        var cancellationToken = new CancellationTokenSource().Token;
-        
+        var cancellationToken = _tokenSource.Token;
+
         using ( var server = new MockKubeApiServer(_testOutput, endpoints =>
         {
             endpoints.MapListNamespacedCustomObjectWithHttpMessagesAsync<TestResource>();
@@ -90,7 +92,7 @@ public class EventWatcherTests
     [Fact]
     public async Task OnEvent_Should_HandleAddedEventAndCallAddOrModifyAsync()
     {
-        var cancellationToken = new CancellationTokenSource().Token;
+        var cancellationToken = _tokenSource.Token;
 
         using (var server = new MockKubeApiServer(_testOutput, endpoints =>
         {
@@ -112,7 +114,7 @@ public class EventWatcherTests
     [Fact]
     public async Task OnEvent_Should_HandleDeletedEventAndCallDeleteAsync()
     {
-        var cancellationToken = new CancellationTokenSource().Token;
+        var cancellationToken = _tokenSource.Token;
 
         using (var server = new MockKubeApiServer(_testOutput, endpoints =>
         {
@@ -134,7 +136,7 @@ public class EventWatcherTests
     [Fact]
     public async Task HandleFinalizeAsync_Should_CallFinalizeAndRemoveFinalizer()
     {
-        var cancellationToken = new CancellationTokenSource().Token;
+        var cancellationToken = _tokenSource.Token;
 
         using (var server = new MockKubeApiServer(_testOutput, endpoints =>
         {

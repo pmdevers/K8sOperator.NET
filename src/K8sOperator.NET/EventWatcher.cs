@@ -64,9 +64,18 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
                     OnEvent(type, item);
                 }
             }
-            catch (Exception)
+            catch (TaskCanceledException)
             {
-                Logger.WatcherError("Error in watcher loop restarting...");
+                Logger.WatcherError("Task was canceled.");
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.WatcherError("Operation was canceled restarting...");
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            }
+            catch (HttpOperationException ex)
+            {
+                Logger.WatcherError($"Http Error: {ex.Response.Content}, restarting...");
                 await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
         }
