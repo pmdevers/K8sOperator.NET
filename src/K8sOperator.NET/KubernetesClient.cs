@@ -28,7 +28,7 @@ internal class NamespacedKubernetesClient(IKubernetes client, ILogger<Namespaced
     {
         var info = typeof(T).GetCustomAttribute<KubernetesEntityAttribute>()!;
 
-        Logger.BeginWatch(Namespace, info.PluralName, labelSelector);
+        Logger.ListAsync(Namespace, info.PluralName, labelSelector);
 
         var response = Client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
             info.Group,
@@ -98,7 +98,7 @@ internal class ClusterKubernetesClient(IKubernetes client, ILogger<ClusterKubern
     {
         var info = typeof(T).GetCustomAttribute<KubernetesEntityAttribute>()!;
 
-        Logger.BeginWatch("cluster-wide", info.PluralName, labelSelector);
+        Logger.ListAsync("cluster-wide", info.PluralName, labelSelector);
 
         var response = Client.CustomObjects.ListClusterCustomObjectWithHttpMessagesAsync(
             info.Group,
