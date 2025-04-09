@@ -53,11 +53,22 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         _cancellationToken = cancellationToken;
         _isRunning = true;
 
-        var response = Client.ListAsync<T>(LabelSelector, cancellationToken);
-
-        await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
+        while (_isRunning && !_cancellationToken.IsCancellationRequested)
         {
-            OnEvent(type, item);
+            try
+            {
+                var response = Client.ListAsync<T>(LabelSelector, cancellationToken);
+
+                await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
+                {
+                    OnEvent(type, item);
+                }
+            }
+            catch (Exception)
+            {
+                Logger.WatcherError("Error in watcher loop restarting...");
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            }
         }
 
         Logger.EndWatch(Crd.PluralName, LabelSelector);
@@ -76,8 +87,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
                     var exception = t.Exception.Flatten().InnerException;
                     Logger.ProcessEventError(exception, eventType, customResource);
                 }
-            })
-            ;
+            });
     }
 
     private async Task ProccessEventAsync(WatchEventType eventType, T resource)
@@ -233,7 +243,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
     {
         if (_isRunning)
         {
-            Logger.LogError(exception, "Watcher error");
+            Logger.WatcherError(exception.Message);
         }
     }
 }

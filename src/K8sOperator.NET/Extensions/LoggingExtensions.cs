@@ -181,4 +181,10 @@ internal static partial class LoggingExtensions
         Message = "End Error {resource}")]
     public static partial void EndError(this ILogger logger, CustomResource resource);
 
+    [LoggerMessage(
+        EventId = 28,
+        Level = LogLevel.Information,
+        Message = "Watcher Error {message}")]
+    public static partial void WatcherError(this ILogger logger, string message);
+
 }
