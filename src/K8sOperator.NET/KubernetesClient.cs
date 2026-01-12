@@ -1,5 +1,4 @@
 ﻿using k8s;
-using k8s.Autorest;
 using k8s.Models;
 using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Models;
@@ -10,11 +9,11 @@ namespace K8sOperator.NET;
 
 internal interface IKubernetesClient
 {
-    Task<HttpOperationResponse<object>> ListAsync<T>(string labelSelector, CancellationToken cancellationToken)
+    IAsyncEnumerable<(WatchEventType, object)> WatchAsync<T>(string labelSelector, CancellationToken cancellationToken)
         where T : CustomResource;
     Task<T> ReplaceAsync<T>(T resource, CancellationToken cancellationToken)
         where T : CustomResource;
-    
+
 
 }
 
@@ -24,18 +23,17 @@ internal class NamespacedKubernetesClient(IKubernetes client, ILogger<Namespaced
     public ILogger Logger { get; } = logger;
     public string Namespace { get; } = ns;
 
-    public Task<HttpOperationResponse<object>> ListAsync<T>(string labelSelector, CancellationToken cancellationToken) where T : CustomResource
+    public IAsyncEnumerable<(WatchEventType, object)> WatchAsync<T>(string labelSelector, CancellationToken cancellationToken) where T : CustomResource
     {
         var info = typeof(T).GetCustomAttribute<KubernetesEntityAttribute>()!;
 
         Logger.ListAsync(Namespace, info.PluralName, labelSelector);
 
-        var response = Client.CustomObjects.ListNamespacedCustomObjectWithHttpMessagesAsync(
+        var response = Client.CustomObjects.WatchListNamespacedCustomObjectAsync(
             info.Group,
             info.ApiVersion,
             Namespace,
             info.PluralName,
-            watch: true,
             allowWatchBookmarks: true,
             labelSelector: labelSelector,
             timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
@@ -93,18 +91,17 @@ internal class ClusterKubernetesClient(IKubernetes client, ILogger<ClusterKubern
         return result;
     }
 
-    public Task<HttpOperationResponse<object>> ListAsync<T>(string labelSelector, CancellationToken cancellationToken)
+    public IAsyncEnumerable<(WatchEventType, object)> WatchAsync<T>(string labelSelector, CancellationToken cancellationToken)
         where T : CustomResource
     {
         var info = typeof(T).GetCustomAttribute<KubernetesEntityAttribute>()!;
 
         Logger.ListAsync("cluster-wide", info.PluralName, labelSelector);
 
-        var response = Client.CustomObjects.ListClusterCustomObjectWithHttpMessagesAsync(
+        var response = Client.CustomObjects.WatchListClusterCustomObjectAsync(
             info.Group,
             info.ApiVersion,
             info.PluralName,
-            watch: true,
             allowWatchBookmarks: true,
             labelSelector: labelSelector,
             timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,

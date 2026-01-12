@@ -22,7 +22,7 @@ public static class ClusterRoleBindingBuilderExtensions
     {
         builder.Add(x =>
         {
-            x.RoleRef = new V1RoleRef(apiGroup, kind, name);
+            x.RoleRef = new V1RoleRef() { ApiGroup = apiGroup, Kind = kind, Name = name };
         });
 
         return builder;
@@ -44,7 +44,7 @@ public static class ClusterRoleBindingBuilderExtensions
         builder.Add(x =>
         {
             x.Subjects ??= [];
-            x.Subjects.Add(new Rbacv1Subject(kind, name, apiGroup, ns));
+            x.Subjects.Add(new Rbacv1Subject() { Kind = kind, Name = name, ApiGroup = apiGroup, NamespaceProperty = ns });
         });
 
         return builder;
