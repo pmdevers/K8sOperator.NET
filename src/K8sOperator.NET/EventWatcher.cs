@@ -59,31 +59,47 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
             {
                 Logger.BeginWatch(Crd.PluralName, LabelSelector);
 
-                var response = Client.WatchAsync<T>(LabelSelector, cancellationToken);
-
-                await foreach (var (type, item) in response.ConfigureAwait(false))
+                await foreach (var (type, item) in Client.WatchAsync<T>(LabelSelector, cancellationToken))
                 {
-                    OnEvent(type, (T)item);
+                    // Handle case where item might be JsonElement and needs conversion
+                    T? resource = item is T typed ? typed : KubernetesJson.Deserialize<T>(KubernetesJson.Serialize(item));
+                    if (resource is not null)
+                    {
+                        OnEvent(type, resource);
+                    }
                 }
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException ex)
             {
-                Logger.WatcherError("Task was canceled.");
+                Logger.WatcherError($"Task was canceled: {ex.Message}");
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                Logger.WatcherError("Operation was canceled restarting...");
+                Logger.WatcherError($"Operation was canceled: {ex.Message}");
             }
             catch (HttpOperationException ex)
             {
                 Logger.WatcherError($"Http Error: {ex.Response.Content}, restarting...");
+            }
+            catch (HttpRequestException ex)
+            {
+                Logger.WatcherError($"Http Request Error: {ex.Message}, restarting...");
             }
             finally
             {
                 Logger.EndWatch(Crd.PluralName, LabelSelector);
 
                 if (!cancellationToken.IsCancellationRequested)
-                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                {
+                    try
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // Ignore cancellation during delay
+                    }
+                }
             }
         }
     }

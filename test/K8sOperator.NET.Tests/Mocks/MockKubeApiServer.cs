@@ -2,52 +2,63 @@ using k8s;
 using K8sOperator.NET.Tests.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using Xunit.Abstractions;
 
 namespace K8sOperator.NET.Tests.Mocks;
 
 public sealed class MockKubeApiServer : IDisposable
 {
-    private readonly WebApplication _server;
-    private readonly TestServer _testServer;
+    private readonly IHost _server;
 
-    public MockKubeApiServer(ITestOutputHelper testOutput, Action<IEndpointRouteBuilder>? endpoints = null)
+    public MockKubeApiServer(ITestOutputHelper testOutput, Action<IEndpointRouteBuilder>? builder = null)
     {
-        var builder = WebApplication.CreateBuilder();
+        _server = new HostBuilder()
+            .ConfigureWebHost(config =>
+            {
+                config.ConfigureServices(services =>
+                {
+                    services.AddRouting();
+                });
+                config.UseKestrel(options => { options.Listen(IPAddress.Loopback, 8888); });
+                config.Configure(app =>
+                {
+                    // Mock Kube API routes
+                    app.UseRouting();
 
-        builder.Services.AddRouting();
+                    app.UseEndpoints(endpoints =>
+                    {
+                        builder?.Invoke(endpoints);
+                        endpoints.Map("{*url}", (ILogger<MockKubeApiServer> logger, string url) =>
+                        {
+                            var safeUrl = url.Replace("\r", string.Empty).Replace("\n", string.Empty);
+                            logger.LogInformation("route not handled: '{url}'", safeUrl);
+                        });
+                    });
+                });
+                config.ConfigureLogging(logging =>
+                {
+                    logging.ClearProviders();
+                    if (testOutput != null)
+                    {
+                        logging.AddTestOutput(testOutput);
+                    }
+                });
+            })
+            .Build();
 
-        builder.Logging.ClearProviders();
-        if (testOutput != null)
-        {
-            builder.Logging.AddTestOutput(testOutput);
-        }
-
-        builder.WebHost.UseTestServer();
-
-        _server = builder.Build();
-
-        _testServer = _server.GetTestServer();
-
-        // Mock Kube API routes
-        _server.UseRouting();
-
-        endpoints?.Invoke(_server);
-        _server.Map("{*url}", (ILogger<MockKubeApiServer> logger, string url) =>
-        {
-            var safeUrl = url.Replace("\r", string.Empty).Replace("\n", string.Empty);
-            logger.LogInformation("route not handled: '{url}'", safeUrl);
-        });
 
         _server.Start();
     }
 
-    public Uri Uri => _testServer.BaseAddress;
+    public Uri Uri => _server.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses
+            .Select(a => new Uri(a)).First();
 
     // Method to get the mocked Kubernetes client
     public IKubernetes GetMockedKubernetesClient()
@@ -58,8 +69,6 @@ public sealed class MockKubeApiServer : IDisposable
 
     public void Dispose()
     {
-        _server.StopAsync();
-        _server.WaitForShutdown();
-        _testServer.Dispose();
+        _server.Dispose();
     }
 }

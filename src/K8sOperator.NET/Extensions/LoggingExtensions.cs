@@ -190,7 +190,7 @@ internal static partial class LoggingExtensions
     [LoggerMessage(
         EventId = 29,
         Level = LogLevel.Information,
-        Message = "ListAsync {ns}/{plural} {labelselector}"
+        Message = "WatchAsync {ns}/{plural} {labelselector}"
     )]
     public static partial void WatchAsync(this ILogger logger, string ns, string plural, string labelselector);
 

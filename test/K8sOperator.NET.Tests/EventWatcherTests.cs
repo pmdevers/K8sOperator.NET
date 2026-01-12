@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using k8s;
 using k8s.Models;
-using k8s;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Models;
-using Xunit.Abstractions;
 using K8sOperator.NET.Tests.Mocks;
 using K8sOperator.NET.Tests.Mocks.Endpoints;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
 
@@ -13,36 +13,42 @@ namespace K8sOperator.NET.Tests;
 
 public class EventWatcherTests
 {
-    private static Watcher<TestResource>.WatchEvent Added => CreateEvent(WatchEventType.Modified, 
-        new TestResource() { Metadata = new() 
-        { 
-            Name = "test", 
-            NamespaceProperty = "default", 
-            Finalizers = ["finalize"], 
-            Uid = "1" 
-        } 
-    });
+    private static Watcher<TestResource>.WatchEvent Added => CreateEvent(WatchEventType.Modified,
+        new TestResource()
+        {
+            Metadata = new()
+            {
+                Name = "test",
+                NamespaceProperty = "default",
+                Finalizers = ["finalize"],
+                Uid = "1"
+            }
+        });
 
     private static Watcher<TestResource>.WatchEvent Finalize => CreateEvent(WatchEventType.Added,
-        new TestResource() { Metadata = new() 
-        { 
-            Name = "test", 
-            NamespaceProperty = "default",
-            DeletionTimestamp = TimeProvider.System.GetUtcNow().DateTime,
-            Finalizers = ["finalize"], 
-            Uid = "1" 
-        } 
-    });
+        new TestResource()
+        {
+            Metadata = new()
+            {
+                Name = "test",
+                NamespaceProperty = "default",
+                DeletionTimestamp = TimeProvider.System.GetUtcNow().DateTime,
+                Finalizers = ["finalize"],
+                Uid = "1"
+            }
+        });
 
     private static Watcher<TestResource>.WatchEvent Deleted => CreateEvent(WatchEventType.Deleted,
-        new TestResource() { Metadata = new() 
-        { 
-            Name = "test", 
-            NamespaceProperty = "default", 
-            Finalizers = ["finalize"], 
-            Uid = "1" 
-        } 
-    });
+        new TestResource()
+        {
+            Metadata = new()
+            {
+                Name = "test",
+                NamespaceProperty = "default",
+                Finalizers = ["finalize"],
+                Uid = "1"
+            }
+        });
 
     private static Watcher<T>.WatchEvent CreateEvent<T>(WatchEventType type, T item)
         where T : CustomResource
@@ -75,9 +81,9 @@ public class EventWatcherTests
     {
         var cancellationToken = _tokenSource.Token;
 
-        using ( var server = new MockKubeApiServer(_testOutput, endpoints =>
+        using (var server = new MockKubeApiServer(_testOutput, endpoints =>
         {
-            endpoints.MapListNamespacedCustomObjectWithHttpMessagesAsync<TestResource>();
+            endpoints.MapListNamespacedCustomObjectWithHttpMessagesAsync<TestResource>(Added);
         }))
         {
             var client = new NamespacedKubernetesClient(server.GetMockedKubernetesClient(), _loggerFactory.CreateLogger<NamespacedKubernetesClient>());
@@ -85,7 +91,7 @@ public class EventWatcherTests
 
             await watcher.Start(cancellationToken);
         }
-        
+
         _loggerFactory.Received(2).CreateLogger(Arg.Any<string>());
     }
 
@@ -93,7 +99,6 @@ public class EventWatcherTests
     public async Task OnEvent_Should_HandleAddedEventAndCallAddOrModifyAsync()
     {
         var cancellationToken = _tokenSource.Token;
-
         using (var server = new MockKubeApiServer(_testOutput, endpoints =>
         {
             endpoints.MapListNamespacedCustomObjectWithHttpMessagesAsync(Added);
