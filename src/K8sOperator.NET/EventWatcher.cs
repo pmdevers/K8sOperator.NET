@@ -5,6 +5,7 @@ using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Models;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace K8sOperator.NET;
 
@@ -61,11 +62,19 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
                 await foreach (var (type, item) in Client.WatchAsync<T>(LabelSelector, cancellationToken))
                 {
-                    // Handle case where item might be JsonElement and needs conversion
-                    T? resource = item is T typed ? typed : KubernetesJson.Deserialize<T>(KubernetesJson.Serialize(item));
-                    if (resource is not null)
+                    if (item is JsonElement je)
+                    {
+                        var i = je.Deserialize<T>();
+                        if (i is not null)
+                        {
+                            OnEvent(type, i);
+                            continue;
+                        }
+                    }
+                    else if (item is T resource)
                     {
                         OnEvent(type, resource);
+                        continue;
                     }
                 }
             }
