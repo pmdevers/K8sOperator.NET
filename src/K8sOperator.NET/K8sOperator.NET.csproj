@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="KubernetesClient" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>

@@ -13,24 +13,29 @@ namespace K8sOperator.NET.Tests.Mocks;
 
 public sealed class MockKubeApiServer : IDisposable
 {
-    private readonly IHost _server;
+    private readonly WebApplication _server;
+    private readonly TestServer _testServer;
 
     public MockKubeApiServer(ITestOutputHelper testOutput, Action<IEndpointRouteBuilder>? endpoints = null)
     {
         var builder = WebApplication.CreateBuilder();
 
         builder.Services.AddRouting();
-        
+
         builder.Logging.ClearProviders();
         if (testOutput != null)
         {
             builder.Logging.AddTestOutput(testOutput);
         }
 
+        builder.WebHost.UseTestServer();
+
         _server = builder.Build();
+
+        _testServer = _server.GetTestServer();
+
         // Mock Kube API routes
         _server.UseRouting();
-        _server.UseTestServer();
 
         endpoints?.Invoke(_server);
         _server.Map("{*url}", (ILogger<MockKubeApiServer> logger, string url) =>
@@ -42,7 +47,7 @@ public sealed class MockKubeApiServer : IDisposable
         _server.Start();
     }
 
-    public Uri Uri => _server.GetTestServer().BaseAddress;
+    public Uri Uri => _testServer.BaseAddress;
 
     // Method to get the mocked Kubernetes client
     public IKubernetes GetMockedKubernetesClient()
@@ -55,6 +60,6 @@ public sealed class MockKubeApiServer : IDisposable
     {
         _server.StopAsync();
         _server.WaitForShutdown();
-        _server.Dispose();
+        _testServer.Dispose();
     }
 }
