@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace K8sOperator.NET.Tests;
 
-namespace K8sOperator.NET.Tests;
-using Xunit;
-using FluentAssertions;
+using AwesomeAssertions;
+using k8s;
+using K8sOperator.NET.Tests.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System;
 using System.Collections.Generic;
-using K8sOperator.NET.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using k8s;
-using Microsoft.Extensions.Logging;
-using K8sOperator.NET.Tests.Logging;
+using Xunit;
 using Xunit.Abstractions;
 
 public class ControllerDatasourceTests
@@ -56,7 +50,7 @@ public class ControllerDatasourceTests
                 x.ClearProviders();
                 x.AddTestOutput(_testOutput);
             })
-            .AddSingleton(kubernetes)   
+            .AddSingleton(kubernetes)
             .BuildServiceProvider();
 
         // Act
@@ -77,7 +71,8 @@ public class ControllerDatasourceTests
         var services = new ServiceCollection();
 
         services.AddSingleton(Substitute.For<IKubernetes>());
-        services.AddLogging(x => {
+        services.AddLogging(x =>
+        {
             x.ClearProviders();
             x.AddTestOutput(_testOutput);
         });

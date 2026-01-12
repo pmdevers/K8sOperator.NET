@@ -1,0 +1,27 @@
+<!-- For more info on central package management go to https://devblogs.microsoft.com/nuget/introducing-central-package-management/ -->
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Core packages - Updated to latest secure versions -->
+    <PackageVersion Include="KubernetesClient" Version="18.0.13" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
+    <!-- Test packages -->
+    <PackageVersion Include="AwesomeAssertions" Version="9.3.0" />
+    <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <!-- Test project specific - Update to .NET 10 compatible versions -->
+    <PackageVersion Include="Microsoft.AspNetCore" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="10.0.1" />
+    <PackageVersion Include="System.Linq.Async" Version="7.0.0" />
+    <PackageVersion Include="System.Reactive" Version="6.1.0" />
+    <!-- Development tools -->
+    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+  </ItemGroup>
+</Project>

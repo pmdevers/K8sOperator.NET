@@ -1,5 +1,4 @@
-﻿using k8s.Authentication;
-using k8s.Models;
+﻿using k8s.Models;
 
 namespace K8sOperator.NET.Generators.Builders;
 
@@ -164,13 +163,13 @@ public static class DeploymentBuilderExtensions
     /// <param name="requests">An action to configure resource requests.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithResources<TBuilder>(this TBuilder builder,
-        Action<IList<V1ResourceClaim>>? claims = null,
+        Action<IList<Corev1ResourceClaim>>? claims = null,
         Action<IDictionary<string, ResourceQuantity>>? limits = null,
         Action<IDictionary<string, ResourceQuantity>>? requests = null
         )
        where TBuilder : IKubernetesObjectBuilder<V1Container>
     {
-        var c = new List<V1ResourceClaim>();
+        var c = new List<Corev1ResourceClaim>();
         claims?.Invoke(c);
         var l = new Dictionary<string, ResourceQuantity>();
         limits?.Invoke(l);

@@ -1,10 +1,11 @@
-﻿using k8s;
+using k8s;
 using k8s.Autorest;
 using k8s.Models;
 using K8sOperator.NET.Extensions;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Models;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace K8sOperator.NET;
 
@@ -32,12 +33,12 @@ public interface IEventWatcher
 }
 
 internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controller, List<object> metadata, ILoggerFactory loggerfactory) : IEventWatcher
-    where T: CustomResource
+    where T : CustomResource
 {
     private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().First();
     private string LabelSelector => Metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
     private string Finalizer => Metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Finalizer ?? FinalizerAttribute.Default;
-    
+
     private readonly ChangeTracker _changeTracker = new();
     private bool _isRunning;
     private CancellationToken _cancellationToken = CancellationToken.None;
@@ -53,38 +54,65 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         _cancellationToken = cancellationToken;
         _isRunning = true;
 
-        Logger.BeginWatch(Crd.PluralName, LabelSelector);
-
         while (_isRunning && !_cancellationToken.IsCancellationRequested)
         {
             try
             {
-                var response = Client.ListAsync<T>(LabelSelector, cancellationToken);
+                Logger.BeginWatch(Crd.PluralName, LabelSelector);
 
-                await foreach (var (type, item) in response.WatchAsync<T, object>(OnError, cancellationToken))
+                await foreach (var (type, item) in Client.WatchAsync<T>(LabelSelector, cancellationToken))
                 {
-                    OnEvent(type, item);
+                    if (item is JsonElement je)
+                    {
+                        var i = je.Deserialize<T>();
+                        if (i is not null)
+                        {
+                            OnEvent(type, i);
+                            continue;
+                        }
+                    }
+                    else if (item is T resource)
+                    {
+                        OnEvent(type, resource);
+                        continue;
+                    }
                 }
             }
-            catch (TaskCanceledException)
+            catch (TaskCanceledException ex)
             {
-                Logger.WatcherError("Task was canceled.");
+                Logger.WatcherError($"Task was canceled: {ex.Message}");
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
-                Logger.WatcherError("Operation was canceled restarting...");
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                Logger.WatcherError($"Operation was canceled: {ex.Message}");
             }
             catch (HttpOperationException ex)
             {
                 Logger.WatcherError($"Http Error: {ex.Response.Content}, restarting...");
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            }
+            catch (HttpRequestException ex)
+            {
+                Logger.WatcherError($"Http Request Error: {ex.Message}, restarting...");
+            }
+            finally
+            {
+                Logger.EndWatch(Crd.PluralName, LabelSelector);
+
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        // Ignore cancellation during delay
+                    }
+                }
             }
         }
-
-        Logger.EndWatch(Crd.PluralName, LabelSelector);
     }
-    
+
 
     private void OnEvent(WatchEventType eventType, T customResource)
     {
@@ -93,7 +121,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         ProccessEventAsync(eventType, customResource!)
             .ContinueWith(t =>
             {
-                if(t.IsFaulted)
+                if (t.IsFaulted)
                 {
                     var exception = t.Exception.Flatten().InnerException;
                     Logger.ProcessEventError(exception, eventType, customResource);
@@ -107,10 +135,10 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         {
             case WatchEventType.Added:
             case WatchEventType.Modified:
-                if(resource.Metadata.DeletionTimestamp is not null)
+                if (resource.Metadata.DeletionTimestamp is not null)
                 {
                     await HandleFinalizeAsync(resource, _cancellationToken);
-                } 
+                }
                 else
                 {
                     await HandleAddOrModifyAsync(resource, _cancellationToken);
@@ -148,7 +176,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         Logger.BeginBookmark(resource);
 
         await _controller.BookmarkAsync(resource, cancellationToken);
-        
+
         _changeTracker.TrackResourceGenerationAsHandled(resource);
 
         Logger.EndBookmark(resource);
@@ -242,20 +270,12 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         }
 
         await _controller.AddOrModifyAsync(resource, cancellationToken);
-        
+
         resource = await ReplaceAsync(resource, _cancellationToken);
-        
+
         _changeTracker.TrackResourceGenerationAsHandled(resource);
 
         Logger.EndAddOrModify(resource);
-    }
-
-    private void OnError(Exception exception)
-    {
-        if (_isRunning)
-        {
-            Logger.WatcherError(exception.Message);
-        }
     }
 }
 
