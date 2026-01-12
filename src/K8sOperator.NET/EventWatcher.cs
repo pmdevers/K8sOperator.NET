@@ -55,10 +55,10 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
         while (_isRunning && !_cancellationToken.IsCancellationRequested)
         {
-            Logger.BeginWatch(Crd.PluralName, LabelSelector);
-
             try
             {
+                Logger.BeginWatch(Crd.PluralName, LabelSelector);
+
                 var response = Client.WatchAsync<T>(LabelSelector, cancellationToken);
 
                 await foreach (var (type, item) in response.ConfigureAwait(false))
@@ -73,16 +73,17 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
             catch (OperationCanceledException)
             {
                 Logger.WatcherError("Operation was canceled restarting...");
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
             catch (HttpOperationException ex)
             {
                 Logger.WatcherError($"Http Error: {ex.Response.Content}, restarting...");
-                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
             finally
             {
                 Logger.EndWatch(Crd.PluralName, LabelSelector);
+
+                if (!cancellationToken.IsCancellationRequested)
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
         }
     }
