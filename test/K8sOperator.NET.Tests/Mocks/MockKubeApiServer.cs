@@ -20,23 +20,25 @@ public sealed class MockKubeApiServer : IDisposable
         var builder = WebApplication.CreateBuilder();
 
         builder.Services.AddRouting();
+        
         builder.Logging.ClearProviders();
         if (testOutput != null)
         {
             builder.Logging.AddTestOutput(testOutput);
         }
 
-        var app = builder.Build();
+        _server = builder.Build();
         // Mock Kube API routes
-        app.UseRouting();
+        _server.UseRouting();
+        _server.UseTestServer();
 
-        endpoints?.Invoke(app);
-        app.Map("{*url}", (ILogger<MockKubeApiServer> logger, string url) =>
+        endpoints?.Invoke(_server);
+        _server.Map("{*url}", (ILogger<MockKubeApiServer> logger, string url) =>
         {
-            logger.LogInformation("route not handled: '{url}'", url);
+            var safeUrl = url.Replace("\r", string.Empty).Replace("\n", string.Empty);
+            logger.LogInformation("route not handled: '{url}'", safeUrl);
         });
 
-        _server = builder.Build();
         _server.Start();
     }
 

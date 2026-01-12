@@ -6,8 +6,6 @@
   <ItemGroup>
     <!-- Core packages - Updated to latest secure versions -->
     <PackageVersion Include="KubernetesClient" Version="18.0.13" />
-    <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
-    <PackageVersion Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.6" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.1" />
     <!-- Test packages -->

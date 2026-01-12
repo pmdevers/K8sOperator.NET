@@ -192,6 +192,6 @@ internal static partial class LoggingExtensions
         Level = LogLevel.Information,
         Message = "ListAsync {ns}/{plural} {labelselector}"
     )]
-    public static partial void ListAsync(this ILogger logger, string ns, string plural, string labelselector);
+    public static partial void WatchAsync(this ILogger logger, string ns, string plural, string labelselector);
 
 }
