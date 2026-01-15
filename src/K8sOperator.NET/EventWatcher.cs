@@ -1,53 +1,24 @@
-using k8s;
+﻿using k8s;
 using k8s.Autorest;
 using k8s.Models;
-using K8sOperator.NET.Extensions;
+using K8sOperator.NET;
 using K8sOperator.NET.Metadata;
-using K8sOperator.NET.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
 namespace K8sOperator.NET;
 
-/// <summary>
-/// Interface representing an event watcher that monitors Kubernetes events and interacts with a controller.
-/// </summary>
-public interface IEventWatcher
-{
-    /// <summary>
-    /// Gets the metadata associated with the event watcher.
-    /// </summary>
-    public IReadOnlyList<object> Metadata { get; }
-
-    /// <summary>
-    /// Gets the controller that processes events captured by the event watcher.
-    /// </summary>
-    public IController Controller { get; }
-
-    /// <summary>
-    /// Starts the event watcher, monitoring for events and processing them using the controller.
-    /// </summary>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    Task Start(CancellationToken cancellationToken);
-}
-
-internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controller, List<object> metadata, ILoggerFactory loggerfactory) : IEventWatcher
+public class EventWatcher<T>(
+    IKubernetes kubernetes,
+    OperatorController<T> controller,
+    List<object> metadata,
+    ILoggerFactory loggerFactory) : IEventWatcher
     where T : CustomResource
 {
-    private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().First();
-    private string LabelSelector => Metadata.OfType<ILabelSelectorMetadata>().FirstOrDefault()?.LabelSelector ?? string.Empty;
-    private string Finalizer => Metadata.OfType<IFinalizerMetadata>().FirstOrDefault()?.Finalizer ?? FinalizerAttribute.Default;
 
-    private readonly ChangeTracker _changeTracker = new();
-    private bool _isRunning;
-    private CancellationToken _cancellationToken = CancellationToken.None;
-    private readonly Controller<T> _controller = controller;
-
-    public IKubernetesClient Client { get; } = client;
-    public ILogger Logger { get; } = loggerfactory.CreateLogger("watcher");
     public IReadOnlyList<object> Metadata { get; } = metadata;
-    public IController Controller => _controller;
+    public ILogger Logger { get; } = loggerFactory.CreateLogger("Watcher");
+    public IOperatorController Controller { get; } = controller;
 
     public async Task Start(CancellationToken cancellationToken)
     {
@@ -58,13 +29,13 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         {
             try
             {
-                Logger.BeginWatch(Crd.PluralName, LabelSelector);
+                Logger.BeginWatch(_crd.PluralName, _labelSelector);
 
-                await foreach (var (type, item) in Client.WatchAsync<T>(LabelSelector, cancellationToken))
+                await foreach (var (type, item) in GetWatchStream())
                 {
                     if (item is JsonElement je)
                     {
-                        var i = je.Deserialize<T>();
+                        var i = KubernetesJson.Deserialize<T>(je);
                         if (i is not null)
                         {
                             OnEvent(type, i);
@@ -75,7 +46,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
                     {
                         OnEvent(type, resource);
                         continue;
-                    }
+                    }// Handle each watch event
                 }
             }
             catch (TaskCanceledException ex)
@@ -96,7 +67,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
             }
             finally
             {
-                Logger.EndWatch(Crd.PluralName, LabelSelector);
+                Logger.EndWatch(_crd.PluralName, _labelSelector);
 
                 if (!cancellationToken.IsCancellationRequested)
                 {
@@ -112,7 +83,6 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
             }
         }
     }
-
 
     private void OnEvent(WatchEventType eventType, T customResource)
     {
@@ -164,7 +134,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
         Logger.BeginError(resource);
 
-        await _controller.ErrorAsync(resource, cancellationToken);
+        await controller.ErrorAsync(resource, cancellationToken);
 
         Logger.EndError(resource);
     }
@@ -175,7 +145,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
         Logger.BeginBookmark(resource);
 
-        await _controller.BookmarkAsync(resource, cancellationToken);
+        await controller.BookmarkAsync(resource, cancellationToken);
 
         _changeTracker.TrackResourceGenerationAsHandled(resource);
 
@@ -194,7 +164,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
         Logger.BeginFinalize(resource);
 
-        await _controller.FinalizeAsync(resource, cancellationToken);
+        await controller.FinalizeAsync(resource, cancellationToken);
 
         if (HasFinalizers(resource))
         {
@@ -217,7 +187,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
         Logger.BeginDelete(resource);
 
-        await _controller.DeleteAsync(resource, cancellationToken);
+        await controller.DeleteAsync(resource, cancellationToken);
 
         _changeTracker.TrackResourceGenerationAsDeleted(resource);
 
@@ -244,7 +214,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
         Logger.ReplaceResource(resource);
 
         // Replace the resource
-        var result = await Client.ReplaceAsync(resource, cancellationToken);
+        var result = await ResourceReplaceAsync(resource, cancellationToken);
 
         return result;
     }
@@ -269,7 +239,7 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
             return;
         }
 
-        await _controller.AddOrModifyAsync(resource, cancellationToken);
+        await controller.AddOrModifyAsync(resource, cancellationToken);
 
         resource = await ReplaceAsync(resource, _cancellationToken);
 
@@ -277,5 +247,78 @@ internal class EventWatcher<T>(IKubernetesClient client, Controller<T> controlle
 
         Logger.EndAddOrModify(resource);
     }
-}
 
+    private Task<T> ResourceReplaceAsync(T resource, CancellationToken cancellationToken)
+    {
+        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault();
+        if (ns == null)
+        {
+            return kubernetes.CustomObjects.ReplaceClusterCustomObjectAsync<T>(
+                body: resource,
+                group: _crd.Group,
+                version: _crd.ApiVersion,
+                plural: _crd.PluralName,
+                name: resource.Metadata.Name,
+                cancellationToken: cancellationToken);
+        }
+        else
+        {
+            return kubernetes.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
+                body: resource,
+                group: _crd.Group,
+                version: _crd.ApiVersion,
+                namespaceParameter: ns.Namespace,
+                plural: _crd.PluralName,
+                name: resource.Metadata.Name,
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    private IAsyncEnumerable<(WatchEventType type, object item)> GetWatchStream()
+    {
+        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault();
+
+        if (ns == null)
+        {
+            return kubernetes.CustomObjects.WatchListClusterCustomObjectAsync(
+                group: _crd.Group,
+                version: _crd.ApiVersion,
+                plural: _crd.PluralName,
+                allowWatchBookmarks: true,
+                labelSelector: _labelSelector,
+                timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
+                onError: (ex) =>
+                {
+                    Logger.LogWatchError(ex, "cluster-wide", _crd.PluralName, _labelSelector);
+                },
+                cancellationToken: _cancellationToken);
+        }
+        else
+        {
+            return kubernetes.CustomObjects.WatchListNamespacedCustomObjectAsync(
+                group: _crd.Group,
+                version: _crd.ApiVersion,
+                namespaceParameter: ns.Namespace,
+                plural: _crd.PluralName,
+                allowWatchBookmarks: true,
+                labelSelector: _labelSelector,
+                timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
+                onError: (ex) =>
+                {
+                    Logger.LogWatchError(ex, ns.Namespace, _crd.PluralName, _labelSelector);
+                },
+                cancellationToken: _cancellationToken);
+        }
+    }
+
+    private CancellationToken _cancellationToken = CancellationToken.None;
+    private bool _isRunning = false;
+
+    private readonly ChangeTracker _changeTracker = new();
+
+    private readonly KubernetesEntityAttribute _crd = metadata.OfType<KubernetesEntityAttribute>().FirstOrDefault()
+        ?? throw new InvalidOperationException($"Controller metadata must include a {nameof(KubernetesEntityAttribute)}. Ensure the controller's resource type is properly decorated.");
+    private string Finalizer => Metadata.OfType<FinalizerAttribute>().FirstOrDefault()?.Finalizer ?? FinalizerAttribute.Default;
+
+    private string _labelSelector = metadata.OfType<LabelSelectorAttribute>().FirstOrDefault()?.LabelSelector ?? string.Empty;
+}

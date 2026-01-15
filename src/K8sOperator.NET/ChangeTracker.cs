@@ -1,11 +1,9 @@
-﻿using K8sOperator.NET.Models;
+﻿namespace K8sOperator.NET;
 
-namespace K8sOperator.NET;
-
-internal class ChangeTracker
+public class ChangeTracker
 {
     private readonly Dictionary<string, long> _lastResourceGenerationProcessed = [];
-    
+
     public bool IsResourceGenerationAlreadyHandled(CustomResource resource)
     {
         bool processedInPast = _lastResourceGenerationProcessed.TryGetValue(resource.Metadata.Uid, out long resourceGeneration);

@@ -1,19 +1,81 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <UserSecretsId>75af4ad7-a38b-4759-92a0-fa12fc4f56dd</UserSecretsId>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CompanyName>PMDEvers</CompanyName>
+    <PackageId>$(ProjectName)</PackageId>
+    <Description>
+      K8sOperator.NET is a powerful and intuitive library designed for creating Kubernetes Operators using C#. It simplifies the development of robust, cloud-native operators by leveraging the full capabilities of the .NET ecosystem, making it easier than ever to manage complex Kubernetes workloads with custom automation.
+    </Description>
+    <Authors>Patrick Evers</Authors>
+    <Owners>$(CompanyName)</Owners>
+    <PackageTags>
+
+    </PackageTags>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <Company>$(CompanyName)</Company>
+    <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>logo.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/$(CompanyName)/$(ProjectName)</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/$(CompanyName)/$(ProjectName)</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="KubernetesClient" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="KubernetesClient" Version="18.0.13" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include=".\Operator.targets">
       <Pack>True</Pack>
       <PackagePath>\build\$(ProjectName).targets</PackagePath>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\assets\$(PackageIcon)">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+      <Visible>false</Visible>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <!-- Auto-import for project references -->
+  <ItemGroup>
+    <None Include="Operator.targets">
+      <Pack>true</Pack>
+      <PackagePath>build</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <!-- Make available to consuming projects -->
+  <Target Name="IncludeOperatorTargets" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <None Include="$(MSBuildThisFileDirectory)Operator.targets" Link="Operator.targets" />
+    </ItemGroup>
+  </Target>
+
 </Project>

@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.0</PackageVersion>
 		<OperatorName Condition=" '$(OperatorName)' == '' ">$(MSBuildProjectName.Replace(" ", "_").ToLower())</OperatorName>
+		<OperatorNamespace Condition=" '$(OperatorNamespace)' == '' ">$(MSBuildProjectName.Replace(" ", "_").ToLower())-system</OperatorNamespace>
 
 		<ContainerRegistry Condition=" '$(ContainerRegistry)' == '' ">ghcr.io</ContainerRegistry>
 		<ContainerRepository Condition=" '$(ContainerRepository)' == '' ">$(Company)/$(OperatorName)</ContainerRepository>
@@ -14,7 +15,7 @@
 			<_Parameter1>$(OperatorName)</_Parameter1>
 		</AssemblyAttribute>
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.NamespaceAttribute">
-			<_Parameter1>$(OperatorName)-system</_Parameter1>
+			<_Parameter1>$(OperatorNamespace)</_Parameter1>
 		</AssemblyAttribute>
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.DockerImageAttribute">
 			<_Parameter1>$(ContainerRegistry)</_Parameter1>

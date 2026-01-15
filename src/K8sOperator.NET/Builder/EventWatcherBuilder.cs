@@ -1,22 +1,29 @@
-﻿using K8sOperator.NET.Metadata;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace K8sOperator.NET.Builder;
 
-internal class EventWatcherBuilder(IServiceProvider serviceProvider, IController controller, IReadOnlyList<object> metadata) 
+public class EventWatcherBuilder
 {
+    public IServiceProvider ServiceProvider { get; }
+    public IOperatorController Controller { get; }
+    public List<object> Metadata { get; }
+
+    private EventWatcherBuilder(IServiceProvider serviceProvider,
+        IOperatorController controller,
+        List<object> metadata)
+    {
+        ServiceProvider = serviceProvider;
+        Controller = controller;
+        Metadata = metadata;
+    }
+
+    public static EventWatcherBuilder Create(IServiceProvider serviceProvider, IOperatorController controller, List<object> metadata)
+        => new(serviceProvider, controller, metadata);
+
     public IEventWatcher Build()
     {
-        var watcherType = typeof(EventWatcher<>).MakeGenericType(controller.ResourceType);
-        IKubernetesClient client = ActivatorUtilities.CreateInstance<ClusterKubernetesClient>(serviceProvider);
+        var watcherType = typeof(EventWatcher<>).MakeGenericType(Controller.ResourceType);
 
-        var ns = metadata.OfType<INamespaceMetadata>().FirstOrDefault();
-        if (ns is not null)
-        { 
-            client = ActivatorUtilities.CreateInstance<NamespacedKubernetesClient>(serviceProvider);
-        }
-
-        
-        return (IEventWatcher)ActivatorUtilities.CreateInstance(serviceProvider, watcherType, client, controller, metadata);
+        return (IEventWatcher)ActivatorUtilities.CreateInstance(ServiceProvider, watcherType, Controller, Metadata);
     }
 }

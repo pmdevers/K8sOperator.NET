@@ -1,4 +1,4 @@
-using k8s;
+﻿using k8s;
 using K8sOperator.NET.Tests.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using Xunit.Abstractions;
 
 namespace K8sOperator.NET.Tests.Mocks;
 
@@ -17,7 +16,7 @@ public sealed class MockKubeApiServer : IDisposable
 {
     private readonly IHost _server;
 
-    public MockKubeApiServer(ITestOutputHelper testOutput, Action<IEndpointRouteBuilder>? builder = null)
+    public MockKubeApiServer(TestContext testOutput, Action<IEndpointRouteBuilder>? builder = null)
     {
         _server = new HostBuilder()
             .ConfigureWebHost(config =>
@@ -47,7 +46,7 @@ public sealed class MockKubeApiServer : IDisposable
                     logging.ClearProviders();
                     if (testOutput != null)
                     {
-                        logging.AddTestOutput(testOutput);
+                        logging.AddTestLogging(testOutput);
                     }
                 });
             })
@@ -57,7 +56,9 @@ public sealed class MockKubeApiServer : IDisposable
         _server.Start();
     }
 
-    public Uri Uri => _server.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses
+    public Uri Uri => _server.Services.GetRequiredService<IServer>()
+            .Features
+            .Get<IServerAddressesFeature>()!.Addresses
             .Select(a => new Uri(a)).First();
 
     // Method to get the mocked Kubernetes client
