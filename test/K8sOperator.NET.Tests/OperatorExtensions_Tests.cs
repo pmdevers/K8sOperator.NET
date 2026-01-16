@@ -1,7 +1,6 @@
 ﻿using k8s;
 using K8sOperator.NET;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using K8sOperator.NET.Tests.Mocks;
 
 namespace K8sOperator.NET.Tests;
 
@@ -84,13 +83,26 @@ public class OperatorExtensions_Tests
         await Assert.That(configureCalled).IsTrue();
     }
 
+    private readonly TestContext _context;
+
     [Test]
     public async Task AddOperator_ValidServices_RegistersDefaultCommands()
     {
+        using var server = new MockKubeApiServer(_context);
+
         // Assert
         var host = new HostBuilder()
-            .ConfigureServices(s => s.AddOperator())
+            .ConfigureServices(s =>
+            {
+                s.AddSingleton(new KubernetesClientConfiguration
+                {
+                    Host = server.Uri.ToString()
+                });
+                s.AddOperator();
+            })
             .Build();
+
+
 
         var commandDatasource = host.Services.GetRequiredService<CommandDatasource>();
         var commands = commandDatasource.GetCommands(host);

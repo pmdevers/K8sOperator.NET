@@ -5,6 +5,7 @@ using K8sOperator.NET.Commands;
 using K8sOperator.NET.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using System.Reflection;
 
@@ -19,7 +20,7 @@ public static class OperatorExtensions
             var builder = new OperatorBuilder();
             configure?.Invoke(builder);
 
-            services.AddSingleton(sp =>
+            services.TryAddSingleton(sp =>
             {
                 var ds = new CommandDatasource(sp);
 
@@ -31,7 +32,7 @@ public static class OperatorExtensions
                 return ds;
             });
 
-            services.AddSingleton(sp =>
+            services.TryAddSingleton(sp =>
             {
                 var operatorName = Assembly.GetEntryAssembly()?.GetCustomAttribute<OperatorNameAttribute>()
                     ?? OperatorNameAttribute.Default;
@@ -45,7 +46,7 @@ public static class OperatorExtensions
                 return new EventWatcherDatasource(sp, [operatorName, dockerImage, ns]);
             });
 
-            services.AddSingleton<IKubernetes>(x =>
+            services.TryAddSingleton<IKubernetes>(x =>
             {
                 KubernetesClientConfiguration config;
 
@@ -60,7 +61,7 @@ public static class OperatorExtensions
                 return new Kubernetes(config);
             });
 
-            services.AddHostedService<OperatorService>();
+            services.TryAddSingleton<OperatorService>();
 
             return services;
         }
