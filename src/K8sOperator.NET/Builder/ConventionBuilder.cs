@@ -2,8 +2,9 @@
 
 public class ConventionBuilder<T>(ICollection<Action<T>> conventions)
 {
-    public void Add(Action<T> convention)
+    public ConventionBuilder<T> Add(Action<T> convention)
     {
         conventions.Add(convention);
+        return this;
     }
 }

@@ -16,7 +16,7 @@ public static class DeploymentBuilder
         => new DeploymentBuilderImp();
 }
 
-internal class DeploymentBuilderImp : KubernetesObjectBuilderWithMetaData<V1Deployment>
+internal class DeploymentBuilderImp : KubernetesObjectBuilderWithMetadata<V1Deployment>
 {
     public override V1Deployment Build()
     {

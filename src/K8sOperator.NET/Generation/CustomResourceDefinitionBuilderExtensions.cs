@@ -395,7 +395,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
         builder.Add(x =>
         {
             x.Type = "string";
-            x.EnumProperty = Enum.GetNames(type).Cast<object>().ToList();
+            x.EnumProperty = [.. Enum.GetNames(type).Cast<object>()];
         });
         return builder;
     }

@@ -1,9 +1,12 @@
 <Solution>
-  <Folder Name="/examples/" />
+  <Folder Name="/examples/">
+    <Project Path="examples/SimpleOperator/SimpleOperator.csproj" Id="ed579abf-9eb5-4f74-95e3-8f4ac03f760a" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/K8sOperator.NET/K8sOperator.NET.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/K8sOperator.NET.Target.Tests/K8sOperator.NET.Target.Tests.csproj" />
     <Project Path="test/K8sOperator.NET.Tests/K8sOperator.NET.Tests.csproj" />
   </Folder>
 </Solution>

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace K8sOperator.NET.Tests.Logging;
+﻿namespace K8sOperator.NET.Tests.Logging;
 
 /// <summary>
 ///     Logger provider for logging to TUnit Test Context.
@@ -20,10 +18,7 @@ internal sealed class TestContextLoggerProvider
     /// </param>
     public TestContextLoggerProvider(TestContext testContext, LogLevel minLogLevel)
     {
-        if (testContext == null)
-        {
-            throw new ArgumentNullException(nameof(testContext));
-        }
+        ArgumentNullException.ThrowIfNull(testContext);
 
         Context = testContext;
         MinLogLevel = minLogLevel;

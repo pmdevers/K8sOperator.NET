@@ -1,37 +1,45 @@
 {
-    "profiles": {
-        "Operator": {
-            "commandName": "Project",
-            "commandLineArgs": "operator",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "dotnetRunMessages": true
-        },
-        "Install": {
-            "commandName": "Project",
-            "commandLineArgs": "install > ./install.yaml",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "dotnetRunMessages": true
-        },
-        "Help": {
-            "commandName": "Project",
-            "commandLineArgs": "",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "dotnetRunMessages": true
-        },
-        "Version": {
-            "commandName": "Project",
-            "commandLineArgs": "version",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "dotnetRunMessages": true
-        }
+  "profiles": {
+    "Help": {
+      "commandName": "Project",
+      "commandLineArgs": "help",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
     },
-   "$schema": "http://json.schemastore.org/launchsettings.json"
+    "Operator": {
+      "commandName": "Project",
+      "commandLineArgs": "operator",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Install": {
+      "commandName": "Project",
+      "commandLineArgs": "install",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Version": {
+      "commandName": "Project",
+      "commandLineArgs": "version",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "GenerateLaunchsettings": {
+      "commandName": "Project",
+      "commandLineArgs": "generate-launchsettings",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    }
+  },
+  "schema": "http://json.schemastore.org/launchsettings.json"
 }

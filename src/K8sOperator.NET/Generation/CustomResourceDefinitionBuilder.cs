@@ -3,7 +3,7 @@ using k8s.Models;
 
 namespace K8sOperator.NET.Generation;
 
-internal class CustomResourceDefinitionBuilder : KubernetesObjectBuilderWithMetaData<V1CustomResourceDefinition>
+internal class CustomResourceDefinitionBuilder : KubernetesObjectBuilderWithMetadata<V1CustomResourceDefinition>
 {
     public override V1CustomResourceDefinition Build()
     {

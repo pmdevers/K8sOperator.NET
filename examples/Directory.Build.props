@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- Import the parent Directory.Build.props if it exists -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" 
+          Condition="Exists($([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../')))"/>
+  
+  <!-- For example projects that reference K8sOperator.NET as a project reference -->
+  <Import Project="$(MSBuildThisFileDirectory)..\src\K8sOperator.NET\Operator.targets" 
+          Condition="Exists('$(MSBuildThisFileDirectory)..\src\K8sOperator.NET\Operator.targets')" />
+</Project>

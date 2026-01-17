@@ -23,7 +23,7 @@ internal class VersionCommand(IHost app) : IOperatorCommand
         }
 
         Console.WriteLine($"{name} version {version}.");
-
+        Console.WriteLine($"Docker Info: {watcher.Metadata.TryGetValue<DockerImageAttribute, string>(x => x.GetImage())}.");
         return Task.CompletedTask;
     }
 }

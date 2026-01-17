@@ -28,6 +28,7 @@ public static class OperatorExtensions
                 ds.Add<OperatorCommand>();
                 ds.Add<InstallCommand>();
                 ds.Add<VersionCommand>();
+                ds.Add<GenerateLaunchSettingsCommand>();
 
                 return ds;
             });
@@ -46,21 +47,12 @@ public static class OperatorExtensions
                 return new EventWatcherDatasource(sp, [operatorName, dockerImage, ns]);
             });
 
-            services.TryAddSingleton<IKubernetes>(x =>
+            services.TryAddSingleton((sp) =>
             {
-                KubernetesClientConfiguration config;
-
-                if (KubernetesClientConfiguration.IsInCluster())
-                {
-                    config = KubernetesClientConfiguration.InClusterConfig();
-                }
-                else
-                {
-                    config = KubernetesClientConfiguration.BuildConfigFromConfigFile();
-                }
+                var config = builder?.Configuration
+                    ?? KubernetesClientConfiguration.BuildDefaultConfig();
                 return new Kubernetes(config);
             });
-
             services.TryAddSingleton<OperatorService>();
 
             return services;
@@ -97,7 +89,9 @@ public static class OperatorExtensions
 
             if (command == null)
             {
-                return app.RunAsync();
+                var helpCommand = commandDatasource.GetCommands(app)
+                    .First(c => c.Command is HelpCommand).Command;
+                return helpCommand.RunAsync(args);
             }
 
             return command.RunAsync(args);
@@ -107,5 +101,5 @@ public static class OperatorExtensions
 
 public class OperatorBuilder
 {
-
+    public KubernetesClientConfiguration? Configuration { get; set; }
 }

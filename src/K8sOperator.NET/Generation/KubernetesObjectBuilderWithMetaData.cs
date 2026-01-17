@@ -13,11 +13,11 @@ public interface IKubernetesObjectBuilderWithMetadata<out T> : IKubernetesObject
 
 }
 
-internal class KubernetesObjectBuilderWithMetaData<T>
+internal class KubernetesObjectBuilderWithMetadata<T>
     : KubernetesObjectBuilder<T>, IKubernetesObjectBuilderWithMetadata<T>
     where T : class, IMetadata<V1ObjectMeta>, new()
 {
-    public KubernetesObjectBuilderWithMetaData()
+    public KubernetesObjectBuilderWithMetadata()
     {
         Add(x => x.Metadata = new V1ObjectMeta());
     }

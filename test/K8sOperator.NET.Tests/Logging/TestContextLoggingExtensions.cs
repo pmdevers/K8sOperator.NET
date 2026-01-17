@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace K8sOperator.NET.Tests.Logging;
+﻿namespace K8sOperator.NET.Tests.Logging;
 
 /// <summary>
 ///     Extension methods for logging to TUnit Test Context.
@@ -24,15 +22,8 @@ public static class TestContextLoggingExtensions
         public void AddTestLogging(TestContext testContext,
             LogLevel minLogLevel = LogLevel.Information)
         {
-            if (logging == null)
-            {
-                throw new ArgumentNullException(nameof(logging));
-            }
-
-            if (testContext == null)
-            {
-                throw new ArgumentNullException(nameof(testContext));
-            }
+            ArgumentNullException.ThrowIfNull(logging);
+            ArgumentNullException.ThrowIfNull(testContext);
 
             logging.AddProvider(
                 new TestContextLoggerProvider(testContext, minLogLevel));

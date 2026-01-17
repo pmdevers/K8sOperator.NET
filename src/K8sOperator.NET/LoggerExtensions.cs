@@ -7,13 +7,6 @@ public static partial class LoggerExtensions
 {
 
     [LoggerMessage(
-        EventId = 0,
-        Level = LogLevel.Information,
-        Message = "Start Operator."
-    )]
-    public static partial void StartOperator(this ILogger logger);
-
-    [LoggerMessage(
         EventId = 1,
         Level = LogLevel.Debug,
         Message = "No controllers added, stopping operator."

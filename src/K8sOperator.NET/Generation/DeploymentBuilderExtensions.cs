@@ -86,7 +86,7 @@ public static class DeploymentBuilderExtensions
     public static IKubernetesObjectBuilder<V1PodTemplateSpec> WithTemplate<TBuilder>(this TBuilder builder)
         where TBuilder : IKubernetesObjectBuilder<V1DeploymentSpec>
     {
-        var podBuilder = new KubernetesObjectBuilderWithMetaData<V1PodTemplateSpec>();
+        var podBuilder = new KubernetesObjectBuilderWithMetadata<V1PodTemplateSpec>();
         builder.Add(x => x.Template = podBuilder.Build());
         return podBuilder;
     }

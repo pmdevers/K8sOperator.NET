@@ -8,13 +8,13 @@ namespace K8sOperator.NET;
 public class OperatorService(IServiceProvider serviceProvider) : BackgroundService
 {
     public IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public EventWatcherDatasource EventWatcherDatasource { get; } = serviceProvider.GetRequiredService<EventWatcherDatasource>();
+    public EventWatcherDatasource Datasource { get; } = serviceProvider.GetRequiredService<EventWatcherDatasource>();
 
     private readonly List<Task> _runningTasks = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var watchers = EventWatcherDatasource.GetWatchers().ToList();
+        var watchers = Datasource.GetWatchers().ToList();
         var logger = ServiceProvider.GetRequiredService<ILogger<OperatorService>>();
 
         if (!watchers.Any())

@@ -3,7 +3,7 @@ using k8s.Models;
 
 namespace K8sOperator.NET.Generation;
 
-internal class ClusterRoleBuilder : KubernetesObjectBuilderWithMetaData<V1ClusterRole>
+internal class ClusterRoleBuilder : KubernetesObjectBuilderWithMetadata<V1ClusterRole>
 {
     public override V1ClusterRole Build()
     {

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace K8sOperator.NET.Tests.Logging;
+﻿namespace K8sOperator.NET.Tests.Logging;
 
 /// <summary>
 ///     An implementation of <see cref="ILogger"/> that writes to the output of the current TUnit Test Context.
@@ -102,6 +100,21 @@ internal sealed class TestContextLogger
     }
 }
 
+public sealed class TestContextLoggerFactory(TestContext testContext)
+        : ILoggerFactory
+{
+    private readonly TestContext _testContext = testContext ?? throw new ArgumentNullException(nameof(testContext));
 
+    public void Dispose()
+    {
+    }
+    public ILogger CreateLogger(string categoryName)
+        => new TestContextLogger(_testContext, categoryName, LogLevel.Debug);
+
+    public void AddProvider(ILoggerProvider provider)
+    {
+        throw new NotImplementedException();
+    }
+}
 
 

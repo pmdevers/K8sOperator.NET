@@ -1,6 +1,8 @@
 ﻿using k8s;
 using K8sOperator.NET;
+using K8sOperator.NET.Tests.Fixtures;
 using K8sOperator.NET.Tests.Mocks;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace K8sOperator.NET.Tests;
 
@@ -14,7 +16,7 @@ public class OperatorExtensions_Tests
         // Act
         var ex = Assert.Throws<ArgumentNullException>(() => services.AddOperator());
         // Assert
-        await Assert.That(ex.ParamName).IsEqualTo("services");
+        await Assert.That(ex.ParamName).IsEqualTo("collection");
     }
 
     [Test]
@@ -26,9 +28,9 @@ public class OperatorExtensions_Tests
         services.AddOperator();
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        var hostedServices = serviceProvider.GetServices<IHostedService>();
+        OperatorService GetHostedServices() => serviceProvider.GetRequiredService<OperatorService>();
 
-        await Assert.That(hostedServices).HasSingleItem();
+        await Assert.That(GetHostedServices).ThrowsNothing();
     }
 
     [Test]
@@ -61,8 +63,19 @@ public class OperatorExtensions_Tests
     [Test]
     public async Task AddOperator_ValidServices_RegistersKubernetesClient()
     {
+        using var server = new MockKubeApiServer();
+
         // Arrange
         IServiceCollection services = new ServiceCollection();
+
+        services.TryAddSingleton<IKubernetes>(sp =>
+        {
+            var config = new KubernetesClientConfiguration
+            {
+                Host = server.Uri.ToString()
+            };
+            return new Kubernetes(config);
+        });
         // Act
         services.AddOperator();
         // Assert
@@ -83,26 +96,21 @@ public class OperatorExtensions_Tests
         await Assert.That(configureCalled).IsTrue();
     }
 
-    private readonly TestContext _context;
-
     [Test]
     public async Task AddOperator_ValidServices_RegistersDefaultCommands()
     {
-        using var server = new MockKubeApiServer(_context);
+        using var server = new MockKubeApiServer(c =>
+        {
+            c.CustomObjects.WatchListClusterCustomObjectAsync(WatchEvents<TestResource>.Added);
+        });
 
         // Assert
         var host = new HostBuilder()
             .ConfigureServices(s =>
             {
-                s.AddSingleton(new KubernetesClientConfiguration
-                {
-                    Host = server.Uri.ToString()
-                });
-                s.AddOperator();
+                s.AddOperator(x => x.Configuration = server.GetKubernetesClientConfiguration());
             })
             .Build();
-
-
 
         var commandDatasource = host.Services.GetRequiredService<CommandDatasource>();
         var commands = commandDatasource.GetCommands(host);

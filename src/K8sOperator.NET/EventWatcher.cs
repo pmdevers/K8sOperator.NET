@@ -51,19 +51,19 @@ public class EventWatcher<T>(
             }
             catch (TaskCanceledException ex)
             {
-                Logger.WatcherError($"Task was canceled: {ex.Message}");
+                Logger.WatcherError("Task was canceled: " + ex.Message);
             }
             catch (OperationCanceledException ex)
             {
-                Logger.WatcherError($"Operation was canceled: {ex.Message}");
+                Logger.WatcherError("Operation was canceled: " + ex.Message);
             }
             catch (HttpOperationException ex)
             {
-                Logger.WatcherError($"Http Error: {ex.Response.Content}, restarting...");
+                Logger.WatcherError("Http Error: " + ex.Response.Content);
             }
             catch (HttpRequestException ex)
             {
-                Logger.WatcherError($"Http Request Error: {ex.Message}, restarting...");
+                Logger.WatcherError("Http Request Error: " + ex.Message);
             }
             finally
             {
@@ -73,6 +73,7 @@ public class EventWatcher<T>(
                 {
                     try
                     {
+                        Logger.LogInformation("Watcher stopped, waiting to restart...");
                         await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
                     }
                     catch (TaskCanceledException)
@@ -320,5 +321,5 @@ public class EventWatcher<T>(
         ?? throw new InvalidOperationException($"Controller metadata must include a {nameof(KubernetesEntityAttribute)}. Ensure the controller's resource type is properly decorated.");
     private string Finalizer => Metadata.OfType<FinalizerAttribute>().FirstOrDefault()?.Finalizer ?? FinalizerAttribute.Default;
 
-    private string _labelSelector = metadata.OfType<LabelSelectorAttribute>().FirstOrDefault()?.LabelSelector ?? string.Empty;
+    private readonly string _labelSelector = metadata.OfType<LabelSelectorAttribute>().FirstOrDefault()?.LabelSelector ?? string.Empty;
 }

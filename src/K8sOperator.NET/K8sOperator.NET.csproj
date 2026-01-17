@@ -43,12 +43,11 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
   </ItemGroup>
 
+  <!-- Pack Operator.targets for NuGet consumers (both direct and transitive) -->
   <ItemGroup>
-    <Content Include=".\Operator.targets">
-      <Pack>True</Pack>
-      <PackagePath>\build\$(ProjectName).targets</PackagePath>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="Operator.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
+    <None Include="Operator.targets" Pack="true" PackagePath="buildTransitive\$(PackageId).targets" />
+    <None Include="LaunchSettings.json" Pack="true" PackagePath="content\launchSettings.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,19 +62,7 @@
     </None>
   </ItemGroup>
 
-  <!-- Auto-import for project references -->
-  <ItemGroup>
-    <None Include="Operator.targets">
-      <Pack>true</Pack>
-      <PackagePath>build</PackagePath>
-    </None>
-  </ItemGroup>
-
-  <!-- Make available to consuming projects -->
-  <Target Name="IncludeOperatorTargets" BeforeTargets="BeforeBuild">
-    <ItemGroup>
-      <None Include="$(MSBuildThisFileDirectory)Operator.targets" Link="Operator.targets" />
-    </ItemGroup>
-  </Target>
+  <!-- Import Operator.targets for project references (but not for itself) -->
+  <Import Project="$(MSBuildThisFileDirectory)Operator.targets" Condition="'$(MSBuildProjectName)' != 'K8sOperator.NET'" />
 
 </Project>
