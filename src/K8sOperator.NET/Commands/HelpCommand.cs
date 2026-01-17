@@ -22,7 +22,7 @@ public class HelpCommand(IHost app) : IOperatorCommand
         Console.WriteLine($"{BOLD}{appname}{NOBOLD} [command]");
         Console.WriteLine();
         Console.WriteLine($"{BOLD}Available Commands:{NOBOLD}");
-        foreach (var argument in info)
+        foreach (var argument in info.Where(x => x.ShowInHelp))
         {
             Console.WriteLine($"{SPACE}{GREEN}{argument.Argument.PadRight(maxSize)}{NORMAL}{SPACE}{YELLOW}{argument.Description}{NORMAL}");
         }

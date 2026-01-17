@@ -40,6 +40,8 @@ public class OperatorArgumentAttribute(string argument) : Attribute
     /// </summary>
     public int Order { get; set; } = 1;
 
+    public bool ShowInHelp { get; set; } = true;
+
     public override string ToString()
         => DebuggerHelpers.GetDebugText(nameof(Argument), Argument);
 }

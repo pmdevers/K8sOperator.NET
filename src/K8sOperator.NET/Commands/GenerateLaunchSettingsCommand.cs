@@ -1,4 +1,4 @@
-using K8sOperator.NET.Builder;
+﻿using K8sOperator.NET.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text;
@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace K8sOperator.NET.Commands;
 
-[OperatorArgument("generate-launchsettings", Description = "Generates launchSettings.json based on registered commands", Order = 100)]
+[OperatorArgument("generate-launchsettings", Description = "Generates launchSettings.json based on registered commands", Order = 100, ShowInHelp = false)]
 public class GenerateLaunchSettingsCommand(IHost host) : IOperatorCommand
 {
     public async Task RunAsync(string[] args)
@@ -43,13 +43,13 @@ public class GenerateLaunchSettingsCommand(IHost host) : IOperatorCommand
 
         var propertiesDir = Path.Combine(Directory.GetCurrentDirectory(), "Properties");
         Directory.CreateDirectory(propertiesDir);
-        
+
         var launchSettingsPath = Path.Combine(propertiesDir, "launchSettings.json");
         await File.WriteAllTextAsync(launchSettingsPath, json);
 
-        Console.WriteLine($"? Generated launchSettings.json at: {launchSettingsPath}");
+        Console.WriteLine($"✅ Generated launchSettings.json at: {launchSettingsPath}");
         Console.WriteLine($"   Found {commands.Count()} command(s):");
-        
+
         foreach (var cmd in commands)
         {
             var arg = cmd.Metadata.OfType<OperatorArgumentAttribute>().FirstOrDefault();
