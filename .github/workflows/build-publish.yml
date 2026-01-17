@@ -35,7 +35,11 @@ jobs:
         run: dotnet build -c Release
 
       - name: Test
-        run: dotnet test -c Release
+        run: |
+          for project in test/*/*.csproj; do
+            echo "Running tests for $project..."
+            dotnet run --project "$project" -c Release
+          done
 
       - name: DotNet Pack
         if: startsWith(github.ref, 'refs/tags/')
