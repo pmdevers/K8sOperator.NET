@@ -5,6 +5,8 @@
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <!-- Enable launch settings creation for testing -->
     <CreateOperatorLaunchSettings>true</CreateOperatorLaunchSettings>
+    <!-- Skip this project during dotnet test due to TUnit compatibility issue -->
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>

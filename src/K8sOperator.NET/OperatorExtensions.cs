@@ -29,6 +29,7 @@ public static class OperatorExtensions
                 ds.Add<InstallCommand>();
                 ds.Add<VersionCommand>();
                 ds.Add<GenerateLaunchSettingsCommand>();
+                ds.Add<GenerateDockerfileCommand>();
 
                 return ds;
             });

@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Dd]ebug/
+[Rr]elease/
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+TestResults/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Kubernetes
+*.yaml
+*.yml
+
+# Documentation
+*.md
+README*
+LICENSE
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~

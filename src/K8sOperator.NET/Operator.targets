@@ -25,6 +25,9 @@
 		
 		<!-- Allow users to opt-in to including launch settings -->
 		<CreateOperatorLaunchSettings Condition=" '$(CreateOperatorLaunchSettings)' == '' ">false</CreateOperatorLaunchSettings>
+		
+		<!-- Allow users to opt-in to generating Dockerfile -->
+		<GenerateOperatorDockerfile Condition=" '$(GenerateOperatorDockerfile)' == '' ">false</GenerateOperatorDockerfile>
 	</PropertyGroup>
 	
 	<ItemGroup>
@@ -69,6 +72,17 @@
 		      IgnoreExitCode="false" />
 		
 		<Message Importance="high" Text="K8sOperator.NET: launchSettings.json generated successfully" />
+	</Target>
+
+	<!-- Generate Dockerfile if it doesn't exist -->
+	<Target Name="GenerateDockerfile" AfterTargets="Build" Condition=" '$(GenerateOperatorDockerfile)' == 'true' AND !Exists('$(MSBuildProjectDirectory)\Dockerfile') ">
+		<Message Importance="high" Text="K8sOperator.NET: Generating Dockerfile..." />
+		
+		<Exec Command="dotnet run --no-build -- generate-dockerfile" 
+		      WorkingDirectory="$(MSBuildProjectDirectory)"
+		      IgnoreExitCode="false" />
+		
+		<Message Importance="high" Text="K8sOperator.NET: Dockerfile generated successfully" />
 	</Target>
 
 </Project>

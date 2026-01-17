@@ -115,7 +115,7 @@ public class OperatorExtensions_Tests
         var commandDatasource = host.Services.GetRequiredService<CommandDatasource>();
         var commands = commandDatasource.GetCommands(host);
 
-        await Assert.That(commands).Count().IsEqualTo(5);
+        await Assert.That(commands).Count().IsEqualTo(6);
     }
 
     [Test]
