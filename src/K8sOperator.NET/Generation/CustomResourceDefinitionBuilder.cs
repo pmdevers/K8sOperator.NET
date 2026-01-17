@@ -1,0 +1,15 @@
+﻿using k8s;
+using k8s.Models;
+
+namespace K8sOperator.NET.Generation;
+
+internal class CustomResourceDefinitionBuilder : KubernetesObjectBuilderWithMetadata<V1CustomResourceDefinition>
+{
+    public override V1CustomResourceDefinition Build()
+    {
+        var crd = base.Build();
+        crd.Initialize();
+        return crd;
+    }
+}
+

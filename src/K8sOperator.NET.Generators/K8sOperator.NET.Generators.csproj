@@ -1,8 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="KubernetesClient" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\K8sOperator.NET\K8sOperator.NET.csproj" />
-  </ItemGroup>
-</Project>

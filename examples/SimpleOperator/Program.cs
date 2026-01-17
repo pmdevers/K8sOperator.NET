@@ -1,21 +1,12 @@
 using K8sOperator.NET;
-using K8sOperator.NET.Extensions;
-using K8sOperator.NET.Generators;
-using SimpleOperator.Projects;
+using SimpleOperator.Controllers;
 
+var builder = WebApplication.CreateBuilder(args);
 
-var builder = OperatorHost.CreateOperatorApplicationBuilder(args)
-    //.WithName("simple-operator")
-    .WithNamespace("simple-ops-system");
-
-builder.AddController<TestItemController>()
-    .WithFinalizer("testitem.local.finalizer"); 
-
-builder.AddController<ProjectController>()
-    .WithFinalizer("project.local.finalizer");
+builder.Services.AddOperator();
 
 var app = builder.Build();
 
-app.AddInstall();
+app.MapController<TodoController>();
 
-await app.RunAsync();
+await app.RunOperatorAsync();

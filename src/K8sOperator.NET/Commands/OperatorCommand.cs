@@ -1,13 +1,13 @@
 ﻿using K8sOperator.NET.Builder;
-using K8sOperator.NET.Metadata;
+using Microsoft.Extensions.Hosting;
 
 namespace K8sOperator.NET.Commands;
 
 [OperatorArgument("operator", Description = "Starts the operator.", Order = -2)]
-internal class OperatorCommand(IOperatorApplication app) : IOperatorCommand
+public class OperatorCommand(IHost app) : IOperatorCommand
 {
     public Task RunAsync(string[] args)
     {
-        return new Operator(app).RunAsync();
+        return app.RunAsync();
     }
 }

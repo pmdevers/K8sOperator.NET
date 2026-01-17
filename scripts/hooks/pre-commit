@@ -1,0 +1,22 @@
+#!/bin/sh
+# Pre-commit hook to run unit tests before allowing a commit
+
+echo "Running tests before commit..."
+
+# Run tests for all projects in test directory
+for project in test/*/*.csproj; do
+    echo "Running tests for $project..."
+    dotnet run --project "$project"
+    
+    # Capture the exit code
+    TEST_EXIT_CODE=$?
+    
+    # If tests failed, prevent the commit
+    if [ $TEST_EXIT_CODE -ne 0 ]; then
+        echo "Tests failed in $project. Commit aborted."
+        exit 1
+    fi
+done
+
+echo "All tests passed. Proceeding with commit."
+exit 0

@@ -4,20 +4,29 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+
+    <CreateOperatorLaunchSettings>true</CreateOperatorLaunchSettings>
+    <GenerateOperatorDockerfile>true</GenerateOperatorDockerfile>
+
     <Company>pmdevers</Company>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
 
-
+  <PropertyGroup>
+    <OperatorName>simple-operator</OperatorName>
+    <OperatorNamespace>simple-system</OperatorNamespace>
     <ContainerRegistry>ghcr.io</ContainerRegistry>
-    <ContainerRepository>pmdevers/simple-operator</ContainerRepository>
-    <ContainerImageTag>1.0.0</ContainerImageTag>
-    <ContainerFamily>-alpha0011</ContainerFamily>
-    
+    <ContainerRepository>simple-operator</ContainerRepository>
+    <ContainerFamily>alpha</ContainerFamily>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\K8sOperator.NET.Generators\K8sOperator.NET.Generators.csproj" />
     <ProjectReference Include="..\..\src\K8sOperator.NET\K8sOperator.NET.csproj" />
   </ItemGroup>
 
- 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>

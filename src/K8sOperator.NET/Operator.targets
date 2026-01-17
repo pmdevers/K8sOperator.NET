@@ -1,26 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
+	<!-- Diagnostic message to confirm target file is loaded -->
+	<Target Name="OperatorTargetsLoaded" BeforeTargets="BeforeBuild">
+		<Message Importance="high" Text="K8sOperator.NET: Operator.targets has been loaded successfully" />
+		<Message Importance="high" Text="K8sOperator.NET: OperatorName=$(OperatorName)" />
+		<Message Importance="high" Text="K8sOperator.NET: OperatorNamespace=$(OperatorNamespace)" />
+		<Message Importance="high" Text="K8sOperator.NET: ContainerRegistry=$(ContainerRegistry)" />
+		<Message Importance="high" Text="K8sOperator.NET: ContainerRepository=$(ContainerRepository)" />
+		<Message Importance="high" Text="K8sOperator.NET: Version=$(Version)" />
+		<Message Importance="high" Text="K8sOperator.NET: ContainerImageTag=$(ContainerImageTag)" />
+		<Message Importance="high" Text="K8sOperator.NET: ContainerFamily=$(ContainerFamily)" />
+		
+		<Message Importance="high" Text="K8sOperator.NET: CreateOperatorLaunchSettings=$(CreateOperatorLaunchSettings)" />
+	</Target>
+
 	<PropertyGroup>
-		<PackageVersion Condition=" '$(PackageVersion)' == '' ">1.0.0</PackageVersion>
 		<OperatorName Condition=" '$(OperatorName)' == '' ">$(MSBuildProjectName.Replace(" ", "_").ToLower())</OperatorName>
+		<OperatorNamespace Condition=" '$(OperatorNamespace)' == '' ">$(MSBuildProjectName.Replace(" ", "_").ToLower())-system</OperatorNamespace>
 
 		<ContainerRegistry Condition=" '$(ContainerRegistry)' == '' ">ghcr.io</ContainerRegistry>
 		<ContainerRepository Condition=" '$(ContainerRepository)' == '' ">$(Company)/$(OperatorName)</ContainerRepository>
-		<ContainerImageTag Condition=" '$(ContainerImageTag)' == '' ">$(PackageVersion)</ContainerImageTag>
+		<ContainerImageTag Condition=" '$(ContainerImageTag)' == '' ">$(Version)</ContainerImageTag>
 		<ContainerFamily Condition=" '$(ContainerFamily)' == '' "></ContainerFamily>
+		
+		<!-- Allow users to opt-in to including launch settings -->
+		<CreateOperatorLaunchSettings Condition=" '$(CreateOperatorLaunchSettings)' == '' ">false</CreateOperatorLaunchSettings>
+		
+		<!-- Allow users to opt-in to generating Dockerfile -->
+		<GenerateOperatorDockerfile Condition=" '$(GenerateOperatorDockerfile)' == '' ">false</GenerateOperatorDockerfile>
 	</PropertyGroup>
+	
 	<ItemGroup>
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.OperatorNameAttribute">
 			<_Parameter1>$(OperatorName)</_Parameter1>
 		</AssemblyAttribute>
 		<AssemblyAttribute Include="K8sOperator.NET.Metadata.NamespaceAttribute">
-			<_Parameter1>$(OperatorName)-system</_Parameter1>
-		</AssemblyAttribute>
-		<AssemblyAttribute Include="K8sOperator.NET.Metadata.DockerImageAttribute">
-			<_Parameter1>$(ContainerRegistry)</_Parameter1>
-			<_Parameter2>$(ContainerRepository)</_Parameter2>
-			<_Parameter3>$(ContainerImageTag)$(ContainerFamily)</_Parameter3>
+			<_Parameter1>$(OperatorNamespace)</_Parameter1>
 		</AssemblyAttribute>
 	</ItemGroup>
+	
+	<!-- Add DockerImageAttribute dynamically to ensure Version is available -->
+	<Target Name="AddDockerImageAttribute" BeforeTargets="GetAssemblyAttributes;CoreCompile">
+		<PropertyGroup>
+			<_ContainerImageTagValue Condition=" '$(ContainerImageTag)' == '' ">$(Version)</_ContainerImageTagValue>
+			<_ContainerImageTagValue Condition=" '$(ContainerImageTag)' != '' ">$(ContainerImageTag)</_ContainerImageTagValue>
+			<!-- Add hyphen before ContainerFamily if it's not empty -->
+			<_ContainerFamilySuffix Condition=" '$(ContainerFamily)' != '' ">-$(ContainerFamily)</_ContainerFamilySuffix>
+			<_ContainerFamilySuffix Condition=" '$(ContainerFamily)' == '' "></_ContainerFamilySuffix>
+			<_FullContainerTag>$(_ContainerImageTagValue)$(_ContainerFamilySuffix)</_FullContainerTag>
+		</PropertyGroup>
+		<ItemGroup>
+			<AssemblyAttribute Include="K8sOperator.NET.Metadata.DockerImageAttribute">
+				<_Parameter1>$(ContainerRegistry)</_Parameter1>
+				<_Parameter2>$(ContainerRepository)</_Parameter2>
+				<_Parameter3>$(_FullContainerTag)</_Parameter3>
+			</AssemblyAttribute>
+		</ItemGroup>
+	</Target>
+
+	<!-- Create Properties folder if it doesn't exist -->
+	<Target Name="EnsurePropertiesFolder" BeforeTargets="CreateOperatorLaunchSettings" Condition=" '$(CreateOperatorLaunchSettings)' == 'true' ">
+		<MakeDir Directories="$(MSBuildProjectDirectory)\Properties" Condition="!Exists('$(MSBuildProjectDirectory)\Properties')" />
+	</Target>
+
+	<!-- Copy launchSettings.json if it doesn't exist -->
+	<Target Name="CreateOperatorLaunchSettings" AfterTargets="Build" Condition=" '$(CreateOperatorLaunchSettings)' == 'true' AND !Exists('$(MSBuildProjectDirectory)\Properties\launchSettings.json') ">
+		<Message Importance="high" Text="K8sOperator.NET: Generating launchSettings.json from registered commands..." />
+		
+		<Exec Command="dotnet run --no-build -- generate-launchsettings" 
+		      WorkingDirectory="$(MSBuildProjectDirectory)"
+		      IgnoreExitCode="false" />
+		
+		<Message Importance="high" Text="K8sOperator.NET: launchSettings.json generated successfully" />
+	</Target>
+
+	<!-- Generate Dockerfile if it doesn't exist -->
+	<Target Name="GenerateDockerfile" AfterTargets="Build" Condition=" '$(GenerateOperatorDockerfile)' == 'true' AND !Exists('$(MSBuildProjectDirectory)\Dockerfile') ">
+		<Message Importance="high" Text="K8sOperator.NET: Generating Dockerfile..." />
+		
+		<Exec Command="dotnet run --no-build -- generate-dockerfile" 
+		      WorkingDirectory="$(MSBuildProjectDirectory)"
+		      IgnoreExitCode="false" />
+		
+		<Message Importance="high" Text="K8sOperator.NET: Dockerfile generated successfully" />
+	</Target>
 
 </Project>

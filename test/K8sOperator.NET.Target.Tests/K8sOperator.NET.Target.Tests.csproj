@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnablePreviewFeatures>true</EnablePreviewFeatures>
+    <!-- Enable launch settings creation for testing -->
+    <CreateOperatorLaunchSettings>true</CreateOperatorLaunchSettings>
+    <!-- Skip this project during dotnet test due to TUnit compatibility issue -->
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TUnit" Version="1.11.28" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\K8sOperator.NET\K8sOperator.NET.csproj" />
+  </ItemGroup>
+
+</Project>

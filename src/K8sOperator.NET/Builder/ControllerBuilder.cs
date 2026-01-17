@@ -1,34 +1,30 @@
-﻿using k8s.Models;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace K8sOperator.NET.Builder;
 
-/// <summary>
-/// Interface for building an Operator Controller.
-/// </summary>
-public interface IControllerBuilder
+public class ControllerBuilder
 {
-    /// <summary>
-    /// Gets the list of metadata associated with the controller.
-    /// </summary>
-    List<object> Metadata { get; }
-}
-
-internal class ControllerBuilder(IServiceProvider serviceProvider, Type controllerType) : IControllerBuilder
-{
-    private readonly IServiceProvider _serviceProvider = serviceProvider;
-    private readonly Type _controllerType = controllerType;
-
-    public List<object> Metadata { get; } = [];
-
-    public IController Build()
+    private ControllerBuilder(IServiceProvider serviceProvider, Type controllerType, List<object> metadata)
     {
-        var controller = (IController)ActivatorUtilities.CreateInstance(_serviceProvider, _controllerType);
-        Metadata.AddRange(_controllerType.GetCustomAttributes());
+        ServiceProvider = serviceProvider;
+        ControllerType = controllerType;
+        Metadata = metadata;
+    }
+    public IServiceProvider ServiceProvider { get; }
+    public Type ControllerType { get; set; }
 
-        var attributes = controller.ResourceType.GetCustomAttributes();
+    public static ControllerBuilder Create(IServiceProvider serviceProvider, Type controllerType, List<object> metadata)
+        => new(serviceProvider, controllerType, metadata);
+
+    public IOperatorController Build()
+    {
+        var controller = (IOperatorController)ActivatorUtilities.CreateInstance(ServiceProvider, ControllerType);
+        Metadata.AddRange(ControllerType.GetCustomAttributes(true));
+
+        var attributes = controller.ResourceType.GetCustomAttributes(true);
         Metadata.AddRange(attributes);
+
         return controller;
     }
+    public List<object> Metadata { get; } = [];
 }
