@@ -2,6 +2,7 @@
 using k8s.Autorest;
 using k8s.Models;
 using K8sOperator.NET;
+using K8sOperator.NET.Generation;
 using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -29,7 +30,7 @@ public class EventWatcher<T>(
         {
             try
             {
-                Logger.BeginWatch(_crd.PluralName, _labelSelector);
+                Logger.BeginWatch(_crd.PluralName, LabelSelector.LabelSelector);
 
                 await foreach (var (type, item) in GetWatchStream())
                 {
@@ -67,7 +68,7 @@ public class EventWatcher<T>(
             }
             finally
             {
-                Logger.EndWatch(_crd.PluralName, _labelSelector);
+                Logger.EndWatch(_crd.PluralName, LabelSelector.LabelSelector);
 
                 if (!cancellationToken.IsCancellationRequested)
                 {
@@ -197,14 +198,14 @@ public class EventWatcher<T>(
 
     private Task<T> RemoveFinalizerAsync(T resource, CancellationToken cancellationToken)
     {
-        resource.Metadata.Finalizers.Remove(Finalizer);
+        resource.Metadata.Finalizers.Remove(Finalizer.Finalizer);
         return ReplaceAsync(resource, cancellationToken);
     }
 
     private Task<T> AddFinalizerAsync(T resource, CancellationToken cancellationToken)
     {
         // Add the finalizer
-        resource.Metadata.EnsureFinalizers().Add(Finalizer);
+        resource.Metadata.EnsureFinalizers().Add(Finalizer.Finalizer);
 
         return ReplaceAsync(resource, cancellationToken);
     }
@@ -221,7 +222,7 @@ public class EventWatcher<T>(
     }
 
     private bool HasFinalizers(T resource)
-        => resource.Metadata.Finalizers?.Contains(Finalizer) ?? false;
+        => resource.Metadata.Finalizers?.Contains(Finalizer.Finalizer) ?? false;
 
     private async Task HandleAddOrModifyAsync(T resource, CancellationToken cancellationToken)
     {
@@ -251,65 +252,71 @@ public class EventWatcher<T>(
 
     private Task<T> ResourceReplaceAsync(T resource, CancellationToken cancellationToken)
     {
-        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault();
-        if (ns == null)
-        {
-            return kubernetes.CustomObjects.ReplaceClusterCustomObjectAsync<T>(
+        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault() ??
+            NamespaceAttribute.Default;
+        var scope = metadata.OfType<ScopeAttribute>().FirstOrDefault() ??
+            ScopeAttribute.Default;
+
+        return scope.Scope switch {
+            EntityScope.Cluster => kubernetes.CustomObjects.ReplaceClusterCustomObjectAsync<T>(
                 body: resource,
                 group: _crd.Group,
                 version: _crd.ApiVersion,
                 plural: _crd.PluralName,
                 name: resource.Metadata.Name,
-                cancellationToken: cancellationToken);
-        }
-        else
-        {
-            return kubernetes.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
+                cancellationToken: cancellationToken),
+
+            EntityScope.Namespaced => kubernetes.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
                 body: resource,
                 group: _crd.Group,
                 version: _crd.ApiVersion,
                 namespaceParameter: ns.Namespace,
                 plural: _crd.PluralName,
                 name: resource.Metadata.Name,
-                cancellationToken: cancellationToken);
-        }
+                cancellationToken: cancellationToken),
+
+            _ => throw new ArgumentException("Invalid scope"),
+        };
     }
 
     private IAsyncEnumerable<(WatchEventType type, object item)> GetWatchStream()
     {
-        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault();
+        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault() ??
+            NamespaceAttribute.Default;
+        var scope = metadata.OfType<ScopeAttribute>().FirstOrDefault() ??
+            ScopeAttribute.Default;
 
-        if (ns == null)
+        return scope.Scope switch
         {
-            return kubernetes.CustomObjects.WatchListClusterCustomObjectAsync(
+            EntityScope.Cluster => kubernetes.CustomObjects.WatchListClusterCustomObjectAsync(
                 group: _crd.Group,
                 version: _crd.ApiVersion,
                 plural: _crd.PluralName,
                 allowWatchBookmarks: true,
-                labelSelector: _labelSelector,
+                labelSelector: LabelSelector.LabelSelector,
                 timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
                 onError: (ex) =>
                 {
-                    Logger.LogWatchError(ex, "cluster-wide", _crd.PluralName, _labelSelector);
+                    Logger.LogWatchError(ex, "cluster-wide", _crd.PluralName, LabelSelector.LabelSelector);
                 },
-                cancellationToken: _cancellationToken);
-        }
-        else
-        {
-            return kubernetes.CustomObjects.WatchListNamespacedCustomObjectAsync(
+                cancellationToken: _cancellationToken),
+
+            EntityScope.Namespaced => kubernetes.CustomObjects.WatchListNamespacedCustomObjectAsync(
                 group: _crd.Group,
                 version: _crd.ApiVersion,
                 namespaceParameter: ns.Namespace,
                 plural: _crd.PluralName,
                 allowWatchBookmarks: true,
-                labelSelector: _labelSelector,
+                labelSelector: LabelSelector.LabelSelector,
                 timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
                 onError: (ex) =>
                 {
-                    Logger.LogWatchError(ex, ns.Namespace, _crd.PluralName, _labelSelector);
+                    Logger.LogWatchError(ex, ns.Namespace, _crd.PluralName, LabelSelector.LabelSelector);
                 },
-                cancellationToken: _cancellationToken);
-        }
+                cancellationToken: _cancellationToken),
+
+            _ => throw new ArgumentException("Invalid scope"),
+        };
     }
 
     private CancellationToken _cancellationToken = CancellationToken.None;
@@ -319,7 +326,9 @@ public class EventWatcher<T>(
 
     private readonly KubernetesEntityAttribute _crd = metadata.OfType<KubernetesEntityAttribute>().FirstOrDefault()
         ?? throw new InvalidOperationException($"Controller metadata must include a {nameof(KubernetesEntityAttribute)}. Ensure the controller's resource type is properly decorated.");
-    private string Finalizer => Metadata.OfType<FinalizerAttribute>().FirstOrDefault()?.Finalizer ?? FinalizerAttribute.Default;
+    private FinalizerAttribute Finalizer => Metadata.OfType<FinalizerAttribute>().FirstOrDefault()
+        ?? FinalizerAttribute.Default;
 
-    private readonly string _labelSelector = metadata.OfType<LabelSelectorAttribute>().FirstOrDefault()?.LabelSelector ?? string.Empty;
+    private LabelSelectorAttribute LabelSelector => Metadata.OfType<LabelSelectorAttribute>().FirstOrDefault()
+        ?? LabelSelectorAttribute.Default;
 }

@@ -28,7 +28,7 @@ public class OperatorExtensions_Tests
         services.AddOperator();
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        OperatorService GetHostedServices() => serviceProvider.GetRequiredService<OperatorService>();
+        IHostedService GetHostedServices() => serviceProvider.GetRequiredService<IHostedService>();
 
         await Assert.That(GetHostedServices).ThrowsNothing();
     }
@@ -108,14 +108,14 @@ public class OperatorExtensions_Tests
         var host = new HostBuilder()
             .ConfigureServices(s =>
             {
-                s.AddOperator(x => x.Configuration = server.GetKubernetesClientConfiguration());
+                s.AddOperator(x => x.KubeConfig = server.GetKubernetesClientConfiguration());
             })
             .Build();
 
         var commandDatasource = host.Services.GetRequiredService<CommandDatasource>();
         var commands = commandDatasource.GetCommands(host);
 
-        await Assert.That(commands).Count().IsEqualTo(6);
+        await Assert.That(commands).Count().IsEqualTo(7);
     }
 
     [Test]

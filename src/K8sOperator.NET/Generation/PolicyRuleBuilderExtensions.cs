@@ -15,7 +15,7 @@ public static class PolicyRuleBuilderExtensions
     /// <param name="groups">The API groups to assign to the policy rule.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithGroups<TBuilder>(this TBuilder builder, params string[] groups)
-        where TBuilder : IKubernetesObjectBuilder<V1PolicyRule>
+        where TBuilder : IObjectBuilder<V1PolicyRule>
     {
         builder.Add(x => x.ApiGroups = groups);
         return builder;
@@ -29,7 +29,7 @@ public static class PolicyRuleBuilderExtensions
     /// <param name="verbs">The verbs to assign to the policy rule.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithVerbs<TBuilder>(this TBuilder builder, params string[] verbs)
-        where TBuilder : IKubernetesObjectBuilder<V1PolicyRule>
+        where TBuilder : IObjectBuilder<V1PolicyRule>
     {
         builder.Add(x => x.Verbs = verbs);
         return builder;
@@ -43,7 +43,7 @@ public static class PolicyRuleBuilderExtensions
     /// <param name="resources">The resources to assign to the policy rule.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithResources<TBuilder>(this TBuilder builder, params string[] resources)
-        where TBuilder : IKubernetesObjectBuilder<V1PolicyRule>
+        where TBuilder : IObjectBuilder<V1PolicyRule>
     {
         builder.Add(x => x.Resources = resources);
         return builder;

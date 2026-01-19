@@ -43,11 +43,16 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
   </ItemGroup>
 
+  <!-- Embed template files as resources -->
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\Dockerfile.template" />
+    <EmbeddedResource Include="Templates\.dockerignore.template" />
+  </ItemGroup>
+
   <!-- Pack Operator.targets for NuGet consumers (both direct and transitive) -->
   <ItemGroup>
     <None Include="Operator.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
     <None Include="Operator.targets" Pack="true" PackagePath="buildTransitive\$(PackageId).targets" />
-    <None Include="LaunchSettings.json" Pack="true" PackagePath="content\launchSettings.json" />
   </ItemGroup>
 
   <ItemGroup>

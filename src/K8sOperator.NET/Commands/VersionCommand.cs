@@ -13,17 +13,19 @@ internal class VersionCommand(IHost app) : IOperatorCommand
     public Task RunAsync(string[] args)
     {
         var watcher = app.Services.GetRequiredService<EventWatcherDatasource>();
-        var name = watcher.Metadata.TryGetValue<OperatorNameAttribute, string>(x => x.OperatorName);
-        var version = watcher.Metadata.TryGetValue<DockerImageAttribute, string>(x => x.Tag);
+        var name = watcher.Metadata.OfType<OperatorNameAttribute>().FirstOrDefault()
+            ?? OperatorNameAttribute.Default;
+        var version = watcher.Metadata.OfType<DockerImageAttribute>().FirstOrDefault()
+            ?? DockerImageAttribute.Default;
 
-        if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(version))
+        if (string.IsNullOrWhiteSpace(name.OperatorName) || string.IsNullOrWhiteSpace(version.Tag))
         {
             Console.WriteLine("Operator name or version metadata is missing.");
             return Task.CompletedTask;
         }
 
         Console.WriteLine($"{name} version {version}.");
-        Console.WriteLine($"Docker Info: {watcher.Metadata.TryGetValue<DockerImageAttribute, string>(x => x.GetImage())}.");
+        Console.WriteLine($"Docker Info: {version.GetImage()}.");
         return Task.CompletedTask;
     }
 }

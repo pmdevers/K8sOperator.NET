@@ -1,4 +1,4 @@
-﻿using k8s;
+using k8s;
 using k8s.Models;
 using K8sOperator.NET;
 using K8sOperator.NET.Builder;
@@ -14,14 +14,11 @@ public class InstallCommand(IHost app) : IOperatorCommand
 {
     private readonly StringWriter _output = new();
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <returns></returns>
     public async Task RunAsync(string[] args)
     {
         var dataSource = app.Services.GetRequiredService<EventWatcherDatasource>();
         var watchers = dataSource.GetWatchers().ToList();
+        var ns = CreateNamespace(dataSource.Metadata);
         var clusterrole = CreateClusterRole(dataSource.Metadata, watchers);
         var clusterrolebinding = CreateClusterRoleBinding(dataSource.Metadata);
         var deployment = CreateDeployment(dataSource.Metadata);
@@ -35,6 +32,7 @@ public class InstallCommand(IHost app) : IOperatorCommand
 
         await Write(clusterrole);
         await Write(clusterrolebinding);
+        await Write(ns);
         await Write(deployment);
 
         Console.WriteLine(_output.ToString());
@@ -46,12 +44,24 @@ public class InstallCommand(IHost app) : IOperatorCommand
         await _output.WriteLineAsync("---");
     }
 
+    private static V1Namespace CreateNamespace(IReadOnlyList<object> metadata)
+    {
+        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault()
+            ?? NamespaceAttribute.Default;
+
+        var nsBuilder = KubernetesObjectBuilder.Create<V1Namespace>();
+        nsBuilder.WithName(ns.Namespace);
+
+        return nsBuilder.Build();
+    }
+
     private static V1CustomResourceDefinition CreateCustomResourceDefinition(IEventWatcher item)
     {
         var group = item.Metadata.OfType<KubernetesEntityAttribute>().First();
-        var scope = item.Metadata.OfType<NamespaceAttribute>().FirstOrDefault();
+        var scope = item.Metadata.OfType<ScopeAttribute>().FirstOrDefault()
+            ?? ScopeAttribute.Default;
 
-        var crdBuilder = new CustomResourceDefinitionBuilder();
+        var crdBuilder = KubernetesObjectBuilder.Create<V1CustomResourceDefinition>();
         crdBuilder
           .WithName($"{group.PluralName}.{group.Group}".ToLower())
           .WithSpec()
@@ -62,7 +72,7 @@ public class InstallCommand(IHost app) : IOperatorCommand
                  plural: group.PluralName.ToLower(),
                  singular: group.Kind.ToLower()
               )
-              .WithScope(scope == null ? EntityScope.Cluster : EntityScope.Namespaced)
+              .WithScope(scope.Scope)
               .WithVersion(
                     group.ApiVersion,
                     schema =>
@@ -77,25 +87,28 @@ public class InstallCommand(IHost app) : IOperatorCommand
 
     private static V1Deployment CreateDeployment(IReadOnlyList<object> metadata)
     {
-        var name = metadata.TryGetValue<OperatorNameAttribute, string>(x => x.OperatorName)!;
-        var image = metadata.TryGetValue<DockerImageAttribute, string>(x => x.GetImage())!;
-        var ns = metadata.TryGetValue<NamespaceAttribute, string>(x => x.Namespace);
+        var name = metadata.OfType<OperatorNameAttribute>().FirstOrDefault()
+            ?? OperatorNameAttribute.Default;
+        var image = metadata.OfType<DockerImageAttribute>().FirstOrDefault()
+            ?? DockerImageAttribute.Default;
+        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault()
+            ?? NamespaceAttribute.Default;
 
-        var deployment = DeploymentBuilder.Create();
+        var deployment = KubernetesObjectBuilder.Create<V1Deployment>();
 
         deployment
-            .WithName($"{name}-deployment")
-            .WithNamespace(ns)
-            .WithLabel("operator-deployment", name)
+            .WithName($"{name.OperatorName}")
+            .WithNamespace(ns.Namespace)
+            .WithLabel("operator", name.OperatorName)
             .WithSpec()
                 .WithReplicas(1)
                 .WithRevisionHistory(0)
                 .WithSelector(matchLabels: x =>
                 {
-                    x.Add("operator-deployment", name);
+                    x.Add("operator", name.OperatorName);
                 })
                 .WithTemplate()
-                    .WithLabel("operator-deployment", name)
+                    .WithLabel("operator", name.OperatorName)
 
                     .WithPod()
                         .WithSecurityContext(b =>
@@ -118,8 +131,8 @@ public class InstallCommand(IHost app) : IOperatorCommand
                                 x.RunAsGroup(2024);
                                 x.WithCapabilities(x => x.WithDrop("ALL"));
                             })
-                            .WithName(name)
-                            .WithImage(image)
+                            .WithName(name.OperatorName)
+                            .WithImage(image.GetImage())
                             .WithResources(
                                 limits: x =>
                                 {
@@ -138,11 +151,12 @@ public class InstallCommand(IHost app) : IOperatorCommand
 
     private static V1ClusterRoleBinding CreateClusterRoleBinding(IReadOnlyList<object> metadata)
     {
-        var name = metadata.TryGetValue<OperatorNameAttribute, string>(x => x.OperatorName);
+        var name = metadata.OfType<OperatorNameAttribute>().FirstOrDefault()
+            ?? OperatorNameAttribute.Default;
 
-        var clusterrolebinding = new ClusterRoleBindingBuilder()
-            .WithName($"{name}-role-binding")
-            .WithRoleRef("rbac.authorization.k8s.io", "ClusterRole", $"{name}-role")
+        var clusterrolebinding = KubernetesObjectBuilder.Create<V1ClusterRoleBinding>()
+            .WithName($"{name.OperatorName}-role-binding")
+            .WithRoleRef("rbac.authorization.k8s.io", "ClusterRole", $"{name.OperatorName}-role")
             .WithSubject(kind: "ServiceAccount", name: "default", ns: "system");
 
         return clusterrolebinding.Build();
@@ -150,10 +164,11 @@ public class InstallCommand(IHost app) : IOperatorCommand
 
     private static V1ClusterRole CreateClusterRole(IReadOnlyList<object> metadata, IEnumerable<IEventWatcher> watchers)
     {
-        var name = metadata.TryGetValue<OperatorNameAttribute, string>(x => x.OperatorName);
+        var name = metadata.OfType<OperatorNameAttribute>().FirstOrDefault()
+            ?? OperatorNameAttribute.Default;
 
-        var clusterrole = new ClusterRoleBuilder()
-                    .WithName($"{name}-role");
+        var clusterrole = KubernetesObjectBuilder.Create<V1ClusterRole>()
+                    .WithName($"{name.OperatorName}-role");
 
         clusterrole.AddRule()
             .WithGroups("")

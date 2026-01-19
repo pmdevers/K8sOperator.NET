@@ -14,7 +14,7 @@ public static class KubernetesObjectBuilderExtentions
     /// <param name="builder">The builder instance.</param>
     /// <param name="name">The name to assign to the Kubernetes object.</param>
     /// <returns>The configured builder.</returns>
-    public static IKubernetesObjectBuilder<T> WithName<T>(this IKubernetesObjectBuilder<T> builder, string name)
+    public static IObjectBuilder<T> WithName<T>(this IObjectBuilder<T> builder, string name)
         where T : IMetadata<V1ObjectMeta>
     {
         builder.Add(x =>
@@ -31,7 +31,7 @@ public static class KubernetesObjectBuilderExtentions
     /// <param name="builder">The builder instance.</param>
     /// <param name="ns">The namespace to assign to the Kubernetes object.</param>
     /// <returns>The configured builder.</returns>
-    public static IKubernetesObjectBuilder<T> WithNamespace<T>(this IKubernetesObjectBuilder<T> builder, string? ns)
+    public static IObjectBuilder<T> WithNamespace<T>(this IObjectBuilder<T> builder, string? ns)
         where T : IMetadata<V1ObjectMeta>
     {
         builder.Add(x =>
@@ -49,7 +49,7 @@ public static class KubernetesObjectBuilderExtentions
     /// <param name="key">The key of the label.</param>
     /// <param name="value">The value of the label.</param>
     /// <returns>The configured builder.</returns>
-    public static IKubernetesObjectBuilder<T> WithLabel<T>(this IKubernetesObjectBuilder<T> builder, string key, string value)
+    public static IObjectBuilder<T> WithLabel<T>(this IObjectBuilder<T> builder, string key, string value)
         where T : IMetadata<V1ObjectMeta>
     {
         builder.Add(x =>

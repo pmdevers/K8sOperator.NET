@@ -9,10 +9,62 @@ public class OperatorService(IServiceProvider serviceProvider) : BackgroundServi
 {
     public IServiceProvider ServiceProvider { get; } = serviceProvider;
     public EventWatcherDatasource Datasource { get; } = serviceProvider.GetRequiredService<EventWatcherDatasource>();
+    public ILeaderElectionService LeaderElectionService { get; } = serviceProvider.GetRequiredService<ILeaderElectionService>();
 
     private readonly List<Task> _runningTasks = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var logger = ServiceProvider.GetRequiredService<ILogger<OperatorService>>();
+
+        // Start leader election in background
+        var leaderElectionTask = Task.Run(() => LeaderElectionService.StartAsync(stoppingToken), stoppingToken);
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            // Wait until we become leader
+            logger.LogInformation("Waiting to become leader...");
+            while (!LeaderElectionService.IsLeader && !stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(100), stoppingToken);
+            }
+
+            if (stoppingToken.IsCancellationRequested)
+                break;
+
+            logger.LogInformation("Became leader. Starting watchers...");
+
+            // We are now the leader, start watchers
+            using var watcherCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+            var watcherTask = Task.Run(() => StartWatchers(watcherCts.Token), watcherCts.Token);
+
+            // Wait while we are still the leader
+            while (LeaderElectionService.IsLeader && !stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(100), stoppingToken);
+            }
+
+            logger.LogInformation("Lost leadership. Stopping watchers...");
+
+            // Leadership lost or stopping, cancel watchers
+            await watcherCts.CancelAsync();
+
+            try
+            {
+                await watcherTask;
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected when leadership is lost
+            }
+
+            _runningTasks.Clear();
+        }
+
+        await leaderElectionTask;
+    }
+
+    public async Task StartWatchers(CancellationToken stoppingToken)
     {
         var watchers = Datasource.GetWatchers().ToList();
         var logger = ServiceProvider.GetRequiredService<ILogger<OperatorService>>();

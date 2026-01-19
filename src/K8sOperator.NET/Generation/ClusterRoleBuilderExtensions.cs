@@ -12,9 +12,9 @@ public static class ClusterRoleBuilderExtensions
     /// </summary>
     /// <param name="builder">The builder instance for the ClusterRole.</param>
     /// <returns>A builder for configuring the policy rule.</returns>
-    public static IKubernetesObjectBuilder<V1PolicyRule> AddRule(this IKubernetesObjectBuilder<V1ClusterRole> builder)
+    public static IObjectBuilder<V1PolicyRule> AddRule(this IObjectBuilder<V1ClusterRole> builder)
     {
-        var b = new PolicyRuleBuilder();
+        var b = new ObjectBuilder<V1PolicyRule>();
         builder.Add(x =>
         {
             x.Rules ??= [];
