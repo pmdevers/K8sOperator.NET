@@ -1,6 +1,7 @@
 ﻿using k8s;
 using k8s.Models;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace K8sOperator.NET.Generation;
 
@@ -138,6 +139,25 @@ public static partial class CustomResourceDefinitionBuilderExtensions
         where TBuilder : IObjectBuilder<V1CustomResourceDefinitionVersion>
     {
         builder.Add(x => x.Storage = storage);
+        return builder;
+    }
+
+    public static TBuilder WithAdditionalPrinterColumn<TBuilder>(this TBuilder builder, 
+        string name, string type, string description, string jsonPath, int priority = 0)
+         where TBuilder : IObjectBuilder<V1CustomResourceDefinitionVersion>
+    {
+        builder.Add(x => {
+            x.AdditionalPrinterColumns ??= [];
+            x.AdditionalPrinterColumns.Add(new V1CustomResourceColumnDefinition()
+            {
+                Name = name,
+                Type = type,
+                Description = description,
+                JsonPath = jsonPath,
+                Priority = priority,
+            });
+        });
+
         return builder;
     }
 

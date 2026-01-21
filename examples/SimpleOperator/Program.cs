@@ -6,8 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOperator(x =>
 {
-    //x.LeaderElection.Add(x => x.Enabled = true);
-    x.LeaderElection.Add(x => x.LeaseNamespace = "default");
+    x.WithLeaderElection();
+
 });
 
 var app = builder.Build();

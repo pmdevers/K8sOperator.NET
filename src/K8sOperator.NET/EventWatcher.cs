@@ -257,7 +257,8 @@ public class EventWatcher<T>(
         var scope = metadata.OfType<ScopeAttribute>().FirstOrDefault() ??
             ScopeAttribute.Default;
 
-        return scope.Scope switch {
+        return scope.Scope switch 
+        {
             EntityScope.Cluster => kubernetes.CustomObjects.ReplaceClusterCustomObjectAsync<T>(
                 body: resource,
                 group: _crd.Group,

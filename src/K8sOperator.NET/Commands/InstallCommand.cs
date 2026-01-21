@@ -6,6 +6,7 @@ using K8sOperator.NET.Generation;
 using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Reflection;
 
 namespace K8sOperator.NET.Commands;
 
@@ -61,6 +62,8 @@ public class InstallCommand(IHost app) : IOperatorCommand
         var scope = item.Metadata.OfType<ScopeAttribute>().FirstOrDefault()
             ?? ScopeAttribute.Default;
 
+        var columns = item.Metadata.OfType<AdditionalPrinterColumnAttribute>();
+
         var crdBuilder = KubernetesObjectBuilder.Create<V1CustomResourceDefinition>();
         crdBuilder
           .WithName($"{group.PluralName}.{group.Group}".ToLower())
@@ -80,9 +83,18 @@ public class InstallCommand(IHost app) : IOperatorCommand
                         schema.WithSchemaForType(item.Controller.ResourceType);
                         schema.WithServed(true);
                         schema.WithStorage(true);
+                        foreach (var column in columns)
+                        {
+                            schema.WithAdditionalPrinterColumn(column.Name, column.Type, column.Description, column.Path);
+                        }
+
                     });
 
-        return crdBuilder.Build();
+        var test = crdBuilder.Build();
+
+        
+
+        return test;
     }
 
     private static V1Deployment CreateDeployment(IReadOnlyList<object> metadata)

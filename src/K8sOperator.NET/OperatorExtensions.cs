@@ -61,7 +61,7 @@ public static class OperatorExtensions
                 return new Kubernetes(config);
             });
 
-            services.TryAddSingleton(sp => builder.LeaderElection.Build());
+            services.TryAddSingleton(sp => builder.LeaderElection);
             services.TryAddSingleton(sp =>
             {
                 var o = sp.GetRequiredService<LeaderElectionOptions>();
@@ -122,11 +122,27 @@ public class OperatorBuilder
     public static OperatorNameAttribute Operator = Assembly.GetExecutingAssembly().GetCustomAttribute<OperatorNameAttribute>() ??
             OperatorNameAttribute.Default;
 
-    public KubernetesClientConfiguration? KubeConfig { get; set; }
-    public IObjectBuilder<LeaderElectionOptions> LeaderElection { get; } = new ObjectBuilder<LeaderElectionOptions>().Add(x =>
+    public OperatorBuilder()
     {
-        x.LeaseName = $"{Operator.OperatorName}-leader-election";
-        x.LeaseNamespace = Namespace.Namespace;
-    });
+        LeaderElection = new ObjectBuilder<LeaderElectionOptions>().Add(x =>
+        {
+            x.LeaseName = $"{Operator.OperatorName}-leader-election";
+            x.LeaseNamespace = Namespace.Namespace;
+        }).Build();
+    }
 
+
+    public KubernetesClientConfiguration? KubeConfig { get; set; }
+    public LeaderElectionOptions LeaderElection { get; set; }
+
+    public void WithKubeConfig(KubernetesClientConfiguration config)
+    {
+        KubeConfig = config;
+    }
+
+    public void WithLeaderElection(Action<LeaderElectionOptions>? actions = null)
+    {
+        LeaderElection.Enabled = true;
+        actions?.Invoke(LeaderElection);
+    }
 }

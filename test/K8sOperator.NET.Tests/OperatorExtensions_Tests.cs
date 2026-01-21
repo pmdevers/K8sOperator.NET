@@ -108,7 +108,7 @@ public class OperatorExtensions_Tests
         var host = new HostBuilder()
             .ConfigureServices(s =>
             {
-                s.AddOperator(x => x.KubeConfig = server.GetKubernetesClientConfiguration());
+                s.AddOperator(x => x.WithKubeConfig(server.GetKubernetesClientConfiguration()));
             })
             .Build();
 
