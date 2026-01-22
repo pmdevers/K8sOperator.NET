@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOperator(x =>
 {
-    x.WithLeaderElection();
+    //x.WithLeaderElection();
 
 });
 

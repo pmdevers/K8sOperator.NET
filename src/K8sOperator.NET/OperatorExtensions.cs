@@ -31,11 +31,8 @@ public static class OperatorExtensions
                 ds.Add<VersionCommand>();
                 ds.Add<CreateCommand>();
 
-#if DEBUG
-                // Development-only commands
                 ds.Add<GenerateLaunchSettingsCommand>();
                 ds.Add<GenerateDockerfileCommand>();
-#endif
 
                 return ds;
             });

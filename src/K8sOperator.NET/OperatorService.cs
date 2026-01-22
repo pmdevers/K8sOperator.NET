@@ -22,12 +22,9 @@ public class OperatorService(IServiceProvider serviceProvider) : BackgroundServi
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            // Wait until we become leader
+            // Wait until we become leader (event-driven)
             logger.LogInformation("Waiting to become leader...");
-            while (!LeaderElectionService.IsLeader && !stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), stoppingToken);
-            }
+            await LeaderElectionService.WaitForLeadershipAsync(stoppingToken);
 
             if (stoppingToken.IsCancellationRequested)
                 break;
@@ -38,11 +35,8 @@ public class OperatorService(IServiceProvider serviceProvider) : BackgroundServi
             using var watcherCts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
             var watcherTask = Task.Run(() => StartWatchers(watcherCts.Token), watcherCts.Token);
 
-            // Wait while we are still the leader
-            while (LeaderElectionService.IsLeader && !stoppingToken.IsCancellationRequested)
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), stoppingToken);
-            }
+            // Wait until leadership is lost (event-driven)
+            await LeaderElectionService.WaitForLeadershipLostAsync(stoppingToken);
 
             logger.LogInformation("Lost leadership. Stopping watchers...");
 

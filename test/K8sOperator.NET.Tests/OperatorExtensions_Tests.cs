@@ -1,5 +1,6 @@
 ﻿using k8s;
 using K8sOperator.NET;
+using K8sOperator.NET.Builder;
 using K8sOperator.NET.Tests.Fixtures;
 using K8sOperator.NET.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -115,7 +116,11 @@ public class OperatorExtensions_Tests
         var commandDatasource = host.Services.GetRequiredService<CommandDatasource>();
         var commands = commandDatasource.GetCommands(host);
 
-        await Assert.That(commands).Count().IsEqualTo(7);
+        var totalCommands = typeof(IOperatorCommand).Assembly.GetTypes()
+            .Where(t => typeof(IOperatorCommand).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .Count();
+
+        await Assert.That(commands).Count().IsEqualTo(totalCommands);
     }
 
     [Test]

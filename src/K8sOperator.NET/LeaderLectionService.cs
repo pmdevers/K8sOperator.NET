@@ -20,9 +20,71 @@ public class LeaderElectionService(IKubernetes kubernetes, LeaderElectionOptions
 {
     private readonly LeaderElectionOptions _options = options;
     private readonly string _identity = $"{Environment.MachineName}-{Guid.NewGuid()}";
+    private readonly object _lock = new();
     private Task? _renewalTask;
+    private TaskCompletionSource _leadershipAcquired = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private TaskCompletionSource _leadershipLost = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool _isLeader;
 
-    public bool IsLeader { get; internal set; }
+    public bool IsLeader
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _isLeader;
+            }
+        }
+        internal set
+        {
+            lock (_lock)
+            {
+                if (_isLeader == value)
+                    return;
+
+                _isLeader = value;
+
+                if (value)
+                {
+                    _leadershipAcquired.TrySetResult();
+                    _leadershipLost = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+                else
+                {
+                    _leadershipLost.TrySetResult();
+                    _leadershipAcquired = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                }
+            }
+        }
+    }
+
+    public Task WaitForLeadershipAsync(CancellationToken cancellationToken)
+    {
+        TaskCompletionSource tcs;
+        lock (_lock)
+        {
+            if (_isLeader)
+                return Task.CompletedTask;
+
+            tcs = _leadershipAcquired;
+        }
+
+        return tcs.Task.WaitAsync(cancellationToken);
+    }
+
+    public Task WaitForLeadershipLostAsync(CancellationToken cancellationToken)
+    {
+        TaskCompletionSource tcs;
+        lock (_lock)
+        {
+            if (!_isLeader)
+                return Task.CompletedTask;
+
+            tcs = _leadershipLost;
+        }
+
+        return tcs.Task.WaitAsync(cancellationToken);
+    }
 
     public async Task StartAsync(CancellationToken stoppingToken)
     {
