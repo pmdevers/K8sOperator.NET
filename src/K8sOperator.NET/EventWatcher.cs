@@ -30,7 +30,7 @@ public class EventWatcher<T>(
         {
             try
             {
-                Logger.BeginWatch(_crd.PluralName, LabelSelector.LabelSelector);
+                Logger.BeginWatch(Crd.PluralName, LabelSelector.LabelSelector);
 
                 await foreach (var (type, item) in GetWatchStream())
                 {
@@ -68,7 +68,7 @@ public class EventWatcher<T>(
             }
             finally
             {
-                Logger.EndWatch(_crd.PluralName, LabelSelector.LabelSelector);
+                Logger.EndWatch(Crd.PluralName, LabelSelector.LabelSelector);
 
                 if (!cancellationToken.IsCancellationRequested)
                 {
@@ -252,27 +252,22 @@ public class EventWatcher<T>(
 
     private Task<T> ResourceReplaceAsync(T resource, CancellationToken cancellationToken)
     {
-        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault() ??
-            NamespaceAttribute.Default;
-        var scope = metadata.OfType<ScopeAttribute>().FirstOrDefault() ??
-            ScopeAttribute.Default;
-
-        return scope.Scope switch 
+        return Scope.Scope switch
         {
             EntityScope.Cluster => kubernetes.CustomObjects.ReplaceClusterCustomObjectAsync<T>(
                 body: resource,
-                group: _crd.Group,
-                version: _crd.ApiVersion,
-                plural: _crd.PluralName,
+                group: Crd.Group,
+                version: Crd.ApiVersion,
+                plural: Crd.PluralName,
                 name: resource.Metadata.Name,
                 cancellationToken: cancellationToken),
 
             EntityScope.Namespaced => kubernetes.CustomObjects.ReplaceNamespacedCustomObjectAsync<T>(
                 body: resource,
-                group: _crd.Group,
-                version: _crd.ApiVersion,
-                namespaceParameter: ns.Namespace,
-                plural: _crd.PluralName,
+                group: Crd.Group,
+                version: Crd.ApiVersion,
+                namespaceParameter: Namespace.Namespace,
+                plural: Crd.PluralName,
                 name: resource.Metadata.Name,
                 cancellationToken: cancellationToken),
 
@@ -282,37 +277,32 @@ public class EventWatcher<T>(
 
     private IAsyncEnumerable<(WatchEventType type, object item)> GetWatchStream()
     {
-        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault() ??
-            NamespaceAttribute.Default;
-        var scope = metadata.OfType<ScopeAttribute>().FirstOrDefault() ??
-            ScopeAttribute.Default;
-
-        return scope.Scope switch
+        return Scope.Scope switch
         {
             EntityScope.Cluster => kubernetes.CustomObjects.WatchListClusterCustomObjectAsync(
-                group: _crd.Group,
-                version: _crd.ApiVersion,
-                plural: _crd.PluralName,
+                group: Crd.Group,
+                version: Crd.ApiVersion,
+                plural: Crd.PluralName,
                 allowWatchBookmarks: true,
                 labelSelector: LabelSelector.LabelSelector,
                 timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
                 onError: (ex) =>
                 {
-                    Logger.LogWatchError(ex, "cluster-wide", _crd.PluralName, LabelSelector.LabelSelector);
+                    Logger.LogWatchError(ex, "cluster-wide", Crd.PluralName, LabelSelector.LabelSelector);
                 },
                 cancellationToken: _cancellationToken),
 
             EntityScope.Namespaced => kubernetes.CustomObjects.WatchListNamespacedCustomObjectAsync(
-                group: _crd.Group,
-                version: _crd.ApiVersion,
-                namespaceParameter: ns.Namespace,
-                plural: _crd.PluralName,
+                group: Crd.Group,
+                version: Crd.ApiVersion,
+                namespaceParameter: Namespace.Namespace,
+                plural: Crd.PluralName,
                 allowWatchBookmarks: true,
                 labelSelector: LabelSelector.LabelSelector,
                 timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
                 onError: (ex) =>
                 {
-                    Logger.LogWatchError(ex, ns.Namespace, _crd.PluralName, LabelSelector.LabelSelector);
+                    Logger.LogWatchError(ex, Namespace.Namespace, Crd.PluralName, LabelSelector.LabelSelector);
                 },
                 cancellationToken: _cancellationToken),
 
@@ -325,8 +315,14 @@ public class EventWatcher<T>(
 
     private readonly ChangeTracker _changeTracker = new();
 
-    private readonly KubernetesEntityAttribute _crd = metadata.OfType<KubernetesEntityAttribute>().FirstOrDefault()
+    private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().FirstOrDefault()
         ?? throw new InvalidOperationException($"Controller metadata must include a {nameof(KubernetesEntityAttribute)}. Ensure the controller's resource type is properly decorated.");
+
+    private NamespaceAttribute Namespace => Metadata.OfType<NamespaceAttribute>().FirstOrDefault() ??
+            NamespaceAttribute.Default;
+
+    private ScopeAttribute Scope => Metadata.OfType<ScopeAttribute>().FirstOrDefault() ??
+            ScopeAttribute.Default;
     private FinalizerAttribute Finalizer => Metadata.OfType<FinalizerAttribute>().FirstOrDefault()
         ?? FinalizerAttribute.Default;
 

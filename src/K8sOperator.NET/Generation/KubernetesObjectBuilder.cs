@@ -61,7 +61,7 @@ public static class KubernetesObjectBuilder
         return new ObjectBuilder<T>().Add(x => x.Initialize());
     }
 
-    public static IObjectBuilder<T> CreatMeta<T>()
+    public static IObjectBuilder<T> CreateMeta<T>()
         where T : IMetadata<V1ObjectMeta>, new()
     {
         return new ObjectBuilder<T>().Add(x => x.Metadata = new());

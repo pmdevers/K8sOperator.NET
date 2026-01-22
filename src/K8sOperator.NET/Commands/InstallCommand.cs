@@ -6,7 +6,6 @@ using K8sOperator.NET.Generation;
 using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Reflection;
 
 namespace K8sOperator.NET.Commands;
 
@@ -90,11 +89,7 @@ public class InstallCommand(IHost app) : IOperatorCommand
 
                     });
 
-        var test = crdBuilder.Build();
-
-        
-
-        return test;
+        return crdBuilder.Build();
     }
 
     private static V1Deployment CreateDeployment(IReadOnlyList<object> metadata)
@@ -138,7 +133,7 @@ public class InstallCommand(IHost app) : IOperatorCommand
                             .WithSecurityContext(x =>
                             {
                                 x.AllowPrivilegeEscalation(false);
-                                x.RunAsRoot();
+                                x.RunAsNonRoot();
                                 x.RunAsUser(2024);
                                 x.RunAsGroup(2024);
                                 x.WithCapabilities(x => x.WithDrop("ALL"));
@@ -166,10 +161,13 @@ public class InstallCommand(IHost app) : IOperatorCommand
         var name = metadata.OfType<OperatorNameAttribute>().FirstOrDefault()
             ?? OperatorNameAttribute.Default;
 
+        var ns = metadata.OfType<NamespaceAttribute>().FirstOrDefault()
+            ?? NamespaceAttribute.Default;
+
         var clusterrolebinding = KubernetesObjectBuilder.Create<V1ClusterRoleBinding>()
             .WithName($"{name.OperatorName}-role-binding")
             .WithRoleRef("rbac.authorization.k8s.io", "ClusterRole", $"{name.OperatorName}-role")
-            .WithSubject(kind: "ServiceAccount", name: "default", ns: "system");
+            .WithSubject(kind: "ServiceAccount", name: "default", ns: ns.Namespace);
 
         return clusterrolebinding.Build();
     }

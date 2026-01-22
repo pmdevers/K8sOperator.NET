@@ -86,7 +86,7 @@ public static class DeploymentBuilderExtensions
     public static IObjectBuilder<V1PodTemplateSpec> WithTemplate<TBuilder>(this TBuilder builder)
         where TBuilder : IObjectBuilder<V1DeploymentSpec>
     {
-        var podBuilder = KubernetesObjectBuilder.CreatMeta<V1PodTemplateSpec>();
+        var podBuilder = KubernetesObjectBuilder.CreateMeta<V1PodTemplateSpec>();
 
         builder.Add(x => x.Template = podBuilder.Build());
         return podBuilder;
@@ -298,10 +298,10 @@ public static class DeploymentBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="runAsRoot">A value indicating whether to run as a root user. Defaults to true.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder RunAsRoot<TBuilder>(this TBuilder builder, bool runAsRoot = true)
+    public static TBuilder RunAsNonRoot<TBuilder>(this TBuilder builder, bool runAsNonRoot = true)
        where TBuilder : IObjectBuilder<V1SecurityContext>
     {
-        builder.Add(x => x.RunAsNonRoot = runAsRoot);
+        builder.Add(x => x.RunAsNonRoot = runAsNonRoot);
         return builder;
     }
 
