@@ -16,8 +16,7 @@ public static class KubernetesObjectBuilderWithMetadataExtentions
     /// <param name="builder">The builder instance.</param>
     /// <param name="name">The name to assign to the Kubernetes object.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithName<TBuilder, T>(TBuilder builder, string name)
-        where TBuilder : IKubernetesObjectBuilderWithMetadata<T>
+    public static IObjectBuilder<T> WithName<T>(IObjectBuilder<T> builder, string name)
         where T : IKubernetesObject<V1ObjectMeta>
     {
         builder.Add(x => x.Metadata.Name = name);

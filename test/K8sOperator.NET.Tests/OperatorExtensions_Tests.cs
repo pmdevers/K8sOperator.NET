@@ -1,5 +1,6 @@
 ﻿using k8s;
 using K8sOperator.NET;
+using K8sOperator.NET.Builder;
 using K8sOperator.NET.Tests.Fixtures;
 using K8sOperator.NET.Tests.Mocks;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -28,7 +29,7 @@ public class OperatorExtensions_Tests
         services.AddOperator();
         // Assert
         var serviceProvider = services.BuildServiceProvider();
-        OperatorService GetHostedServices() => serviceProvider.GetRequiredService<OperatorService>();
+        IHostedService GetHostedServices() => serviceProvider.GetRequiredService<IHostedService>();
 
         await Assert.That(GetHostedServices).ThrowsNothing();
     }
@@ -108,14 +109,18 @@ public class OperatorExtensions_Tests
         var host = new HostBuilder()
             .ConfigureServices(s =>
             {
-                s.AddOperator(x => x.Configuration = server.GetKubernetesClientConfiguration());
+                s.AddOperator(x => x.WithKubeConfig(server.GetKubernetesClientConfiguration()));
             })
             .Build();
 
         var commandDatasource = host.Services.GetRequiredService<CommandDatasource>();
         var commands = commandDatasource.GetCommands(host);
 
-        await Assert.That(commands).Count().IsEqualTo(6);
+        var totalCommands = typeof(IOperatorCommand).Assembly.GetTypes()
+            .Where(t => typeof(IOperatorCommand).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .Count();
+
+        await Assert.That(commands).Count().IsEqualTo(totalCommands);
     }
 
     [Test]

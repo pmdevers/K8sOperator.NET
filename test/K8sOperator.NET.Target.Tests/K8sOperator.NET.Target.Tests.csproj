@@ -4,7 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <EnablePreviewFeatures>true</EnablePreviewFeatures>
     <!-- Enable launch settings creation for testing -->
-    <CreateOperatorLaunchSettings>true</CreateOperatorLaunchSettings>
+    <CreateOperatorLaunchSettings>false</CreateOperatorLaunchSettings>
     <!-- Skip this project during dotnet test due to TUnit compatibility issue -->
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
@@ -15,6 +15,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\K8sOperator.NET\K8sOperator.NET.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

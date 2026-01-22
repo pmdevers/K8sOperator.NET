@@ -9,12 +9,12 @@
       "dotnetRunMessages": true
     },
     "Operator": {
-      "commandName": "Project",
-      "commandLineArgs": "operator",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "dotnetRunMessages": true
+        "commandName": "Project",
+        "commandLineArgs": "operator",
+        "environmentVariables": {
+            "ASPNETCORE_ENVIRONMENT": "Development"
+        },
+        "dotnetRunMessages": true
     },
     "Install": {
       "commandName": "Project",
@@ -27,6 +27,14 @@
     "Version": {
       "commandName": "Project",
       "commandLineArgs": "version",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Create": {
+      "commandName": "Project",
+      "commandLineArgs": "create",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

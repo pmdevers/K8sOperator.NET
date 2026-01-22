@@ -14,10 +14,10 @@ public static class DeploymentBuilderExtensions
     /// <typeparam name="TBuilder">The type of the builder.</typeparam>
     /// <param name="builder">The builder instance.</param>
     /// <returns>A builder for configuring the deployment spec.</returns>
-    public static IKubernetesObjectBuilder<V1DeploymentSpec> WithSpec<TBuilder>(this TBuilder builder)
-        where TBuilder : IKubernetesObjectBuilder<V1Deployment>
+    public static IObjectBuilder<V1DeploymentSpec> WithSpec<TBuilder>(this TBuilder builder)
+        where TBuilder : IObjectBuilder<V1Deployment>
     {
-        var specBuilder = new KubernetesObjectBuilder<V1DeploymentSpec>();
+        var specBuilder = new ObjectBuilder<V1DeploymentSpec>();
         builder.Add(x => x.Spec = specBuilder.Build());
         return specBuilder;
     }
@@ -30,7 +30,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="replicas">The number of replicas. Defaults to 1.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithReplicas<TBuilder>(this TBuilder builder, int replicas = 1)
-        where TBuilder : IKubernetesObjectBuilder<V1DeploymentSpec>
+        where TBuilder : IObjectBuilder<V1DeploymentSpec>
     {
         builder.Add(x => x.Replicas = replicas);
         return builder;
@@ -44,7 +44,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="revisionHistoryLimit">The revision history limit. Defaults to 0.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithRevisionHistory<TBuilder>(this TBuilder builder, int revisionHistoryLimit = 0)
-        where TBuilder : IKubernetesObjectBuilder<V1DeploymentSpec>
+        where TBuilder : IObjectBuilder<V1DeploymentSpec>
     {
         builder.Add(x => x.RevisionHistoryLimit = revisionHistoryLimit);
         return builder;
@@ -61,7 +61,7 @@ public static class DeploymentBuilderExtensions
     public static TBuilder WithSelector<TBuilder>(this TBuilder builder,
         Action<IList<V1LabelSelectorRequirement>>? matchExpressions = null,
         Action<Dictionary<string, string>>? matchLabels = null)
-        where TBuilder : IKubernetesObjectBuilder<V1DeploymentSpec>
+        where TBuilder : IObjectBuilder<V1DeploymentSpec>
     {
         var labels = new Dictionary<string, string>();
         matchLabels?.Invoke(labels);
@@ -83,10 +83,11 @@ public static class DeploymentBuilderExtensions
     /// <typeparam name="TBuilder">The type of the builder.</typeparam>
     /// <param name="builder">The builder instance.</param>
     /// <returns>A builder for configuring the pod template spec.</returns>
-    public static IKubernetesObjectBuilder<V1PodTemplateSpec> WithTemplate<TBuilder>(this TBuilder builder)
-        where TBuilder : IKubernetesObjectBuilder<V1DeploymentSpec>
+    public static IObjectBuilder<V1PodTemplateSpec> WithTemplate<TBuilder>(this TBuilder builder)
+        where TBuilder : IObjectBuilder<V1DeploymentSpec>
     {
-        var podBuilder = new KubernetesObjectBuilderWithMetadata<V1PodTemplateSpec>();
+        var podBuilder = KubernetesObjectBuilder.CreateMeta<V1PodTemplateSpec>();
+
         builder.Add(x => x.Template = podBuilder.Build());
         return podBuilder;
     }
@@ -97,10 +98,10 @@ public static class DeploymentBuilderExtensions
     /// <typeparam name="TBuilder">The type of the builder.</typeparam>
     /// <param name="builder">The builder instance.</param>
     /// <returns>A builder for configuring the pod spec.</returns>
-    public static IKubernetesObjectBuilder<V1PodSpec> WithPod<TBuilder>(this TBuilder builder)
-        where TBuilder : IKubernetesObjectBuilder<V1PodTemplateSpec>
+    public static IObjectBuilder<V1PodSpec> WithPod<TBuilder>(this TBuilder builder)
+        where TBuilder : IObjectBuilder<V1PodTemplateSpec>
     {
-        var podBuilder = new KubernetesObjectBuilder<V1PodSpec>();
+        var podBuilder = new ObjectBuilder<V1PodSpec>();
         builder.Add(x => x.Spec = podBuilder.Build());
         return podBuilder;
     }
@@ -113,10 +114,10 @@ public static class DeploymentBuilderExtensions
     /// <typeparam name="TBuilder">The type of the builder.</typeparam>
     /// <param name="builder">The builder instance.</param>
     /// <returns>A builder for configuring the container.</returns>
-    public static IKubernetesObjectBuilder<V1Container> AddContainer<TBuilder>(this TBuilder builder)
-        where TBuilder : IKubernetesObjectBuilder<V1PodSpec>
+    public static IObjectBuilder<V1Container> AddContainer<TBuilder>(this TBuilder builder)
+        where TBuilder : IObjectBuilder<V1PodSpec>
     {
-        var b = new ContainerBuilder();
+        var b = new ObjectBuilder<V1Container>();
         builder.Add(x =>
         {
             x.Containers ??= [];
@@ -133,7 +134,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="name">The name of the container.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithName<TBuilder>(this TBuilder builder, string name)
-       where TBuilder : IKubernetesObjectBuilder<V1Container>
+       where TBuilder : IObjectBuilder<V1Container>
     {
         builder.Add(x => x.Name = name);
         return builder;
@@ -147,7 +148,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="image">The image of the container.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithImage<TBuilder>(this TBuilder builder, string image)
-       where TBuilder : IKubernetesObjectBuilder<V1Container>
+       where TBuilder : IObjectBuilder<V1Container>
     {
         builder.Add(x => x.Image = image);
         return builder;
@@ -167,7 +168,7 @@ public static class DeploymentBuilderExtensions
         Action<IDictionary<string, ResourceQuantity>>? limits = null,
         Action<IDictionary<string, ResourceQuantity>>? requests = null
         )
-       where TBuilder : IKubernetesObjectBuilder<V1Container>
+       where TBuilder : IObjectBuilder<V1Container>
     {
         var c = new List<Corev1ResourceClaim>();
         claims?.Invoke(c);
@@ -195,7 +196,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="action">An action to configure the object field selector.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder AddEnvFromObjectField<TBuilder>(this TBuilder builder, string name, Action<V1ObjectFieldSelector> action)
-        where TBuilder : IKubernetesObjectBuilder<V1Container>
+        where TBuilder : IObjectBuilder<V1Container>
     {
         return builder.AddEnv(name, action);
     }
@@ -209,7 +210,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="action">An action to configure the ConfigMap key selector.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder AddEnvFromSecretKey<TBuilder>(this TBuilder builder, string name, Action<V1ConfigMapKeySelector> action)
-        where TBuilder : IKubernetesObjectBuilder<V1Container>
+        where TBuilder : IObjectBuilder<V1Container>
     {
         return builder.AddEnv(name, action);
     }
@@ -223,7 +224,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="action">An action to configure the secret key selector.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder AddEnvFromConfigMapKey<TBuilder>(this TBuilder builder, string name, Action<V1ConfigMapKeySelector> action)
-        where TBuilder : IKubernetesObjectBuilder<V1Container>
+        where TBuilder : IObjectBuilder<V1Container>
     {
         return builder.AddEnv(name, action);
     }
@@ -237,7 +238,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="action">An action to configure the resource field selector.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder AddEnvFromResourceField<TBuilder>(this TBuilder builder, string name, Action<V1ResourceFieldSelector> action)
-        where TBuilder : IKubernetesObjectBuilder<V1Container>
+        where TBuilder : IObjectBuilder<V1Container>
     {
         return builder.AddEnv(name, action);
     }
@@ -249,10 +250,10 @@ public static class DeploymentBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="securityContext">An action to configure the security context.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithSecurityContext<TBuilder>(this TBuilder builder, Action<IKubernetesObjectBuilder<V1SecurityContext>> securityContext)
-       where TBuilder : IKubernetesObjectBuilder<V1Container>
+    public static TBuilder WithSecurityContext<TBuilder>(this TBuilder builder, Action<IObjectBuilder<V1SecurityContext>> securityContext)
+       where TBuilder : IObjectBuilder<V1Container>
     {
-        var b = new KubernetesObjectBuilder<V1SecurityContext>();
+        var b = new ObjectBuilder<V1SecurityContext>();
         securityContext(b);
 
         builder.Add(x => x.SecurityContext = b.Build());
@@ -266,10 +267,10 @@ public static class DeploymentBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="securityContext">An action to configure the security context.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithSecurityContext<TBuilder>(this TBuilder builder, Action<IKubernetesObjectBuilder<V1PodSecurityContext>> securityContext)
-        where TBuilder : IKubernetesObjectBuilder<V1PodSpec>
+    public static TBuilder WithSecurityContext<TBuilder>(this TBuilder builder, Action<IObjectBuilder<V1PodSecurityContext>> securityContext)
+        where TBuilder : IObjectBuilder<V1PodSpec>
     {
-        var b = new KubernetesObjectBuilder<V1PodSecurityContext>();
+        var b = new ObjectBuilder<V1PodSecurityContext>();
         securityContext(b);
 
         builder.Add(x => x.SecurityContext = b.Build());
@@ -284,7 +285,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="allowPrivilegeEscalation">A value indicating whether to allow privilege escalation. Defaults to true.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder AllowPrivilegeEscalation<TBuilder>(this TBuilder builder, bool allowPrivilegeEscalation = true)
-       where TBuilder : IKubernetesObjectBuilder<V1SecurityContext>
+       where TBuilder : IObjectBuilder<V1SecurityContext>
     {
         builder.Add(x => x.AllowPrivilegeEscalation = allowPrivilegeEscalation);
         return builder;
@@ -297,10 +298,10 @@ public static class DeploymentBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="runAsRoot">A value indicating whether to run as a root user. Defaults to true.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder RunAsRoot<TBuilder>(this TBuilder builder, bool runAsRoot = true)
-       where TBuilder : IKubernetesObjectBuilder<V1SecurityContext>
+    public static TBuilder RunAsNonRoot<TBuilder>(this TBuilder builder, bool runAsNonRoot = true)
+       where TBuilder : IObjectBuilder<V1SecurityContext>
     {
-        builder.Add(x => x.RunAsNonRoot = runAsRoot);
+        builder.Add(x => x.RunAsNonRoot = runAsNonRoot);
         return builder;
     }
 
@@ -312,7 +313,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="userId">The user ID to run the container as.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder RunAsUser<TBuilder>(this TBuilder builder, int userId)
-       where TBuilder : IKubernetesObjectBuilder<V1SecurityContext>
+       where TBuilder : IObjectBuilder<V1SecurityContext>
     {
         builder.Add(x => x.RunAsUser = userId);
         return builder;
@@ -326,7 +327,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="groupId">The group ID to run the container as.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder RunAsGroup<TBuilder>(this TBuilder builder, int groupId)
-      where TBuilder : IKubernetesObjectBuilder<V1SecurityContext>
+      where TBuilder : IObjectBuilder<V1SecurityContext>
     {
         builder.Add(x => x.RunAsGroup = groupId);
         return builder;
@@ -339,10 +340,10 @@ public static class DeploymentBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="capabilities">An action to configure the security capabilities.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithCapabilities<TBuilder>(this TBuilder builder, Action<IKubernetesObjectBuilder<V1Capabilities>> capabilities)
-      where TBuilder : IKubernetesObjectBuilder<V1SecurityContext>
+    public static TBuilder WithCapabilities<TBuilder>(this TBuilder builder, Action<IObjectBuilder<V1Capabilities>> capabilities)
+      where TBuilder : IObjectBuilder<V1SecurityContext>
     {
-        var b = new KubernetesObjectBuilder<V1Capabilities>();
+        var b = new ObjectBuilder<V1Capabilities>();
         capabilities(b);
         builder.Add(x => x.Capabilities = b.Build());
         return builder;
@@ -356,7 +357,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="capability">An array of capabilities to drop.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithDrop<TBuilder>(this TBuilder builder, params string[] capability)
-      where TBuilder : IKubernetesObjectBuilder<V1Capabilities>
+      where TBuilder : IObjectBuilder<V1Capabilities>
     {
         builder.Add(x => x.Drop = capability);
         return builder;
@@ -371,7 +372,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="value">The value of the environment variable.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder AddEnv<TBuilder>(this TBuilder builder, string name, string value)
-       where TBuilder : IKubernetesObjectBuilder<V1Container>
+       where TBuilder : IObjectBuilder<V1Container>
     {
         builder.Add(x =>
         {
@@ -397,7 +398,7 @@ public static class DeploymentBuilderExtensions
     /// <returns>The configured builder.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the resource type is not supported.</exception>
     public static TBuilder AddEnv<TBuilder, T>(this TBuilder builder, string name, Action<T> action)
-        where TBuilder : IKubernetesObjectBuilder<V1Container>
+        where TBuilder : IObjectBuilder<V1Container>
         where T : new()
     {
         var value = new T();
@@ -431,7 +432,7 @@ public static class DeploymentBuilderExtensions
     /// <param name="terminationGracePeriodSeconds">The duration in seconds that Kubernetes waits before forcefully terminating the pod.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithTerminationGracePeriodSeconds<TBuilder>(this TBuilder builder, int terminationGracePeriodSeconds)
-        where TBuilder : IKubernetesObjectBuilder<V1PodSpec>
+        where TBuilder : IObjectBuilder<V1PodSpec>
     {
         builder.Add(x =>
         {

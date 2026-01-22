@@ -18,7 +18,7 @@ public static class ClusterRoleBindingBuilderExtensions
     /// <param name="name">The name of the role.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithRoleRef<TBuilder>(this TBuilder builder, string apiGroup, string kind, string name)
-        where TBuilder : IKubernetesObjectBuilder<V1ClusterRoleBinding>
+        where TBuilder : IObjectBuilder<V1ClusterRoleBinding>
     {
         builder.Add(x =>
         {
@@ -39,7 +39,7 @@ public static class ClusterRoleBindingBuilderExtensions
     /// <param name="ns">The namespace of the subject, if applicable.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithSubject<TBuilder>(this TBuilder builder, string kind, string name, string? apiGroup = null, string? ns = null)
-        where TBuilder : IKubernetesObjectBuilder<V1ClusterRoleBinding>
+        where TBuilder : IObjectBuilder<V1ClusterRoleBinding>
     {
         builder.Add(x =>
         {

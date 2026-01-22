@@ -1,6 +1,7 @@
 ﻿using k8s;
 using k8s.Models;
 using System.Reflection;
+using System.Reflection.Emit;
 
 namespace K8sOperator.NET.Generation;
 
@@ -16,10 +17,10 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <typeparam name="TBuilder">The type of the builder.</typeparam>
     /// <param name="builder">The builder instance.</param>
     /// <returns>A builder for configuring the CustomResourceDefinition spec.</returns>
-    public static IKubernetesObjectBuilder<V1CustomResourceDefinitionSpec> WithSpec<TBuilder>(this TBuilder builder)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinition>
+    public static IObjectBuilder<V1CustomResourceDefinitionSpec> WithSpec<TBuilder>(this TBuilder builder)
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinition>
     {
-        var specBuilder = new KubernetesObjectBuilder<V1CustomResourceDefinitionSpec>();
+        var specBuilder = new ObjectBuilder<V1CustomResourceDefinitionSpec>();
         builder.Add(x => x.Spec = specBuilder.Build());
         return specBuilder;
     }
@@ -32,7 +33,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="group">The API group of the CustomResourceDefinition.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithGroup<TBuilder>(this TBuilder builder, string group)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionSpec>
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionSpec>
     {
         builder.Add(x => x.Group = group);
         return builder;
@@ -57,7 +58,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
         string singular,
         string[]? shortnames = null,
         string[]? categories = null)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionSpec>
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionSpec>
     {
         builder.Add(x => x.Names = new()
         {
@@ -79,7 +80,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="scope">The scope of the CustomResourceDefinition.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithScope<TBuilder>(this TBuilder builder, EntityScope scope)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionSpec>
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionSpec>
     {
         builder.Add(x => x.Scope = scope.ToString());
         return builder;
@@ -93,10 +94,10 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="name">The name of the version.</param>
     /// <param name="schema">An action to configure the schema for the version.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithVersion<TBuilder>(this TBuilder builder, string name, Action<IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>> schema)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionSpec>
+    public static TBuilder WithVersion<TBuilder>(this TBuilder builder, string name, Action<IObjectBuilder<V1CustomResourceDefinitionVersion>> schema)
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionSpec>
     {
-        var b = new KubernetesObjectBuilder<V1CustomResourceDefinitionVersion>();
+        var b = new ObjectBuilder<V1CustomResourceDefinitionVersion>();
         b.Add(x => x.Name = name);
         schema(b);
 
@@ -121,7 +122,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="served">A value indicating whether the version is served.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithServed<TBuilder>(this TBuilder builder, bool served)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionVersion>
     {
         builder.Add(x => x.Served = served);
         return builder;
@@ -135,9 +136,28 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="storage">A value indicating whether the version is stored.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithStorage<TBuilder>(this TBuilder builder, bool storage)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionVersion>
     {
         builder.Add(x => x.Storage = storage);
+        return builder;
+    }
+
+    public static TBuilder WithAdditionalPrinterColumn<TBuilder>(this TBuilder builder, 
+        string name, string type, string description, string jsonPath, int priority = 0)
+         where TBuilder : IObjectBuilder<V1CustomResourceDefinitionVersion>
+    {
+        builder.Add(x => {
+            x.AdditionalPrinterColumns ??= [];
+            x.AdditionalPrinterColumns.Add(new V1CustomResourceColumnDefinition()
+            {
+                Name = name,
+                Type = type,
+                Description = description,
+                JsonPath = jsonPath,
+                Priority = priority,
+            });
+        });
+
         return builder;
     }
 
@@ -149,10 +169,10 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="resourceType">The type of the resource.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithSchemaForType<TBuilder>(this TBuilder builder, Type resourceType)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionVersion>
     {
-        var b = new KubernetesObjectBuilder<V1CustomResourceValidation>();
-        var s = new KubernetesObjectBuilder<V1JSONSchemaProps>();
+        var b = new ObjectBuilder<V1CustomResourceValidation>();
+        var s = new ObjectBuilder<V1JSONSchemaProps>();
 
         s.OfType("object");
 
@@ -180,11 +200,11 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="builder">The builder instance.</param>
     /// <param name="schema">An action to configure the schema.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithSchema<TBuilder>(this TBuilder builder, Action<IKubernetesObjectBuilder<V1JSONSchemaProps>> schema)
-        where TBuilder : IKubernetesObjectBuilder<V1CustomResourceDefinitionVersion>
+    public static TBuilder WithSchema<TBuilder>(this TBuilder builder, Action<IObjectBuilder<V1JSONSchemaProps>> schema)
+        where TBuilder : IObjectBuilder<V1CustomResourceDefinitionVersion>
     {
-        var b = new KubernetesObjectBuilder<V1CustomResourceValidation>();
-        var s = new KubernetesObjectBuilder<V1JSONSchemaProps>();
+        var b = new ObjectBuilder<V1CustomResourceValidation>();
+        var s = new ObjectBuilder<V1JSONSchemaProps>();
         schema(s);
 
         builder.Add(x =>
@@ -203,7 +223,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="type">The type of the schema property.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder OfType<TBuilder>(this TBuilder builder, string type)
-        where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
+        where TBuilder : IObjectBuilder<V1JSONSchemaProps>
     {
         builder.Add(x => x.Type = type);
         return builder;
@@ -219,7 +239,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <returns>The configured builder.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the provided type is not valid.</exception>
     public static TBuilder OfType<TBuilder>(this TBuilder builder, Type type, bool? nullable = false)
-        where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
+        where TBuilder : IObjectBuilder<V1JSONSchemaProps>
     {
         if (type.FullName == "System.String")
         {
@@ -293,7 +313,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="nullable">A value indicating whether the property is nullable.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder IsNullable<TBuilder>(this TBuilder builder, bool nullable)
-        where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
+        where TBuilder : IObjectBuilder<V1JSONSchemaProps>
     {
         builder.Add(x => x.Nullable = nullable);
         return builder;
@@ -307,10 +327,10 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="name">The name of the property.</param>
     /// <param name="schema">An action to configure the schema for the property.</param>
     /// <returns>The configured builder.</returns>
-    public static TBuilder WithProperty<TBuilder>(this TBuilder builder, string name, Action<IKubernetesObjectBuilder<V1JSONSchemaProps>> schema)
-        where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
+    public static TBuilder WithProperty<TBuilder>(this TBuilder builder, string name, Action<IObjectBuilder<V1JSONSchemaProps>> schema)
+        where TBuilder : IObjectBuilder<V1JSONSchemaProps>
     {
-        var p = new KubernetesObjectBuilder<V1JSONSchemaProps>();
+        var p = new ObjectBuilder<V1JSONSchemaProps>();
         schema(p);
 
         builder.Add(x =>
@@ -329,7 +349,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
     /// <param name="names">The names of the required properties.</param>
     /// <returns>The configured builder.</returns>
     public static TBuilder WithRequired<TBuilder>(this TBuilder builder, IEnumerable<string>? names)
-        where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
+        where TBuilder : IObjectBuilder<V1JSONSchemaProps>
     {
         builder.Add(x => x.Required = names?.Select(name => $"{name[..1].ToLowerInvariant()}{name[1..]}").ToList());
         return builder;
@@ -337,7 +357,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
 
 
     private static TBuilder ObjectType<TBuilder>(this TBuilder builder, Type type)
-        where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
+        where TBuilder : IObjectBuilder<V1JSONSchemaProps>
     {
         switch (type.FullName)
         {
@@ -390,7 +410,7 @@ public static partial class CustomResourceDefinitionBuilderExtensions
         }
     }
     private static TBuilder EnumType<TBuilder>(this TBuilder builder, Type type)
-        where TBuilder : IKubernetesObjectBuilder<V1JSONSchemaProps>
+        where TBuilder : IObjectBuilder<V1JSONSchemaProps>
     {
         builder.Add(x =>
         {

@@ -34,7 +34,7 @@ public class GenerateLaunchSettingsCommand(IHost host) : IOperatorCommand
             schema = "http://json.schemastore.org/launchsettings.json"
         };
 
-        var json = JsonSerializer.Serialize(launchSettings, new JsonSerializerOptions
+        string json = JsonSerializer.Serialize(launchSettings, new JsonSerializerOptions()
         {
             WriteIndented = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -74,7 +74,7 @@ public class GenerateLaunchSettingsCommand(IHost host) : IOperatorCommand
             {
                 sb.Append(char.ToUpper(part[0]));
                 if (part.Length > 1)
-                    sb.Append(part.Substring(1).ToLower());
+                    sb.Append(part[1..].ToLower());
             }
         }
 
