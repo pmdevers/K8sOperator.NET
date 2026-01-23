@@ -2,13 +2,13 @@ using k8s;
 using K8sOperator.NET;
 using K8sOperator.NET.Builder;
 using K8sOperator.NET.Commands;
+using K8sOperator.NET.Configuration;
 using K8sOperator.NET.Generation;
-using K8sOperator.NET.Metadata;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using System.Reflection;
 
 namespace K8sOperator.NET;
 
@@ -21,6 +21,33 @@ public static class OperatorExtensions
             var builder = new OperatorBuilder();
             configure?.Invoke(builder);
 
+            // Register operator configuration
+            services.TryAddSingleton(sp =>
+            {
+                var configuration = sp.GetService<IConfiguration>();
+                var provider = new OperatorConfigurationProvider(configuration);
+                var config = provider.Build();
+
+                // Apply OperatorBuilder overrides if provided
+                if (builder.OperatorConfiguration != null)
+                {
+                    if (!string.IsNullOrEmpty(builder.OperatorConfiguration.OperatorName))
+                        config.OperatorName = builder.OperatorConfiguration.OperatorName;
+                    if (!string.IsNullOrEmpty(builder.OperatorConfiguration.Namespace))
+                        config.Namespace = builder.OperatorConfiguration.Namespace;
+                    if (!string.IsNullOrEmpty(builder.OperatorConfiguration.ContainerRegistry))
+                        config.ContainerRegistry = builder.OperatorConfiguration.ContainerRegistry;
+                    if (!string.IsNullOrEmpty(builder.OperatorConfiguration.ContainerRepository))
+                        config.ContainerRepository = builder.OperatorConfiguration.ContainerRepository;
+                    if (!string.IsNullOrEmpty(builder.OperatorConfiguration.ContainerTag))
+                        config.ContainerTag = builder.OperatorConfiguration.ContainerTag;
+                }
+
+                config.Validate();
+
+                return config;
+            });
+
             services.TryAddSingleton(sp =>
             {
                 var ds = new CommandDatasource(sp);
@@ -31,24 +58,14 @@ public static class OperatorExtensions
                 ds.Add<VersionCommand>();
                 ds.Add<CreateCommand>();
 
-                ds.Add<GenerateLaunchSettingsCommand>();
-                ds.Add<GenerateDockerfileCommand>();
-
                 return ds;
             });
 
             services.TryAddSingleton(sp =>
             {
-                var operatorName = Assembly.GetEntryAssembly()?.GetCustomAttribute<OperatorNameAttribute>()
-                    ?? OperatorNameAttribute.Default;
-
-                var dockerImage = Assembly.GetEntryAssembly()?.GetCustomAttribute<DockerImageAttribute>()
-                    ?? DockerImageAttribute.Default;
-
-                var ns = Assembly.GetEntryAssembly()?.GetCustomAttribute<NamespaceAttribute>()
-                    ?? NamespaceAttribute.Default;
-
-                return new EventWatcherDatasource(sp, [operatorName, dockerImage, ns]);
+                // Use OperatorConfiguration directly
+                var config = sp.GetRequiredService<OperatorConfiguration>();
+                return new EventWatcherDatasource(sp, config);
             });
 
             services.TryAddSingleton<IKubernetes>((sp) =>
@@ -58,7 +75,23 @@ public static class OperatorExtensions
                 return new Kubernetes(config);
             });
 
-            services.TryAddSingleton(sp => builder.LeaderElection);
+            services.TryAddSingleton(sp =>
+            {
+                var config = sp.GetRequiredService<OperatorConfiguration>();
+                var leaderElection = builder.LeaderElection;
+
+                // Set default lease name and namespace if not already set
+                if (string.IsNullOrEmpty(leaderElection.LeaseName))
+                {
+                    leaderElection.LeaseName = $"{config.OperatorName}-leader-election";
+                }
+                if (string.IsNullOrEmpty(leaderElection.LeaseNamespace))
+                {
+                    leaderElection.LeaseNamespace = config.Namespace;
+                }
+
+                return leaderElection;
+            });
             services.TryAddSingleton(sp =>
             {
                 var o = sp.GetRequiredService<LeaderElectionOptions>();
@@ -107,39 +140,5 @@ public static class OperatorExtensions
 
             return command.RunAsync(args);
         }
-    }
-}
-
-public class OperatorBuilder
-{
-    public static NamespaceAttribute Namespace = Assembly.GetExecutingAssembly().GetCustomAttribute<NamespaceAttribute>() ??
-            NamespaceAttribute.Default;
-    public static DockerImageAttribute Docker = Assembly.GetExecutingAssembly().GetCustomAttribute<DockerImageAttribute>() ??
-            DockerImageAttribute.Default;
-    public static OperatorNameAttribute Operator = Assembly.GetExecutingAssembly().GetCustomAttribute<OperatorNameAttribute>() ??
-            OperatorNameAttribute.Default;
-
-    public OperatorBuilder()
-    {
-        LeaderElection = new ObjectBuilder<LeaderElectionOptions>().Add(x =>
-        {
-            x.LeaseName = $"{Operator.OperatorName}-leader-election";
-            x.LeaseNamespace = Namespace.Namespace;
-        }).Build();
-    }
-
-
-    public KubernetesClientConfiguration? KubeConfig { get; set; }
-    public LeaderElectionOptions LeaderElection { get; set; }
-
-    public void WithKubeConfig(KubernetesClientConfiguration config)
-    {
-        KubeConfig = config;
-    }
-
-    public void WithLeaderElection(Action<LeaderElectionOptions>? actions = null)
-    {
-        LeaderElection.Enabled = true;
-        actions?.Invoke(LeaderElection);
     }
 }

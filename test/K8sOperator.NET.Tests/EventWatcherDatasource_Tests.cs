@@ -1,5 +1,6 @@
 ﻿using k8s.Models;
 using K8sOperator.NET.Builder;
+using K8sOperator.NET.Configuration;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Tests.Fixtures;
 using K8sOperator.NET.Tests.Mocks;
@@ -17,14 +18,16 @@ public class EventWatcherDatasource_Tests
         return services.BuildServiceProvider();
     }
 
-    private static List<object> CreateMetadata()
+    private static OperatorConfiguration CreateConfiguration()
     {
-        return
-        [
-            OperatorNameAttribute.Default,
-            DockerImageAttribute.Default,
-            NamespaceAttribute.Default
-        ];
+        return new OperatorConfiguration
+        {
+            OperatorName = OperatorNameAttribute.Default.OperatorName,
+            ContainerRegistry = DockerImageAttribute.Default.Registry,
+            ContainerRepository = DockerImageAttribute.Default.Repository,
+            ContainerTag = DockerImageAttribute.Default.Tag,
+            Namespace = NamespaceAttribute.Default.Namespace
+        };
     }
 
     [Test]
@@ -32,15 +35,15 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
+        var configuration = CreateConfiguration();
 
         // Act
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         // Assert
         await Assert.That(datasource).IsNotNull();
         await Assert.That(datasource.ServiceProvider).IsEqualTo(serviceProvider);
-        await Assert.That(datasource.Metadata).IsEqualTo(metadata);
+        await Assert.That(datasource.Configuration).IsEqualTo(configuration);
     }
 
     [Test]
@@ -48,8 +51,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         // Act
         var builder = datasource.Add<TestController>();
@@ -63,8 +66,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         // Act
         var result = datasource.Add<TestController>();
@@ -78,8 +81,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         // Act
         var watchers = datasource.GetWatchers().ToList();
@@ -93,8 +96,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         datasource.Add<TestController>();
 
@@ -112,8 +115,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         datasource.Add<TestController>();
         datasource.Add<AnotherTestController>();
@@ -132,8 +135,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
         var conventionApplied = false;
 
         datasource.Add<TestController>()
@@ -155,8 +158,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
         var conventionOrder = new List<int>();
 
         datasource.Add<TestController>()
@@ -176,8 +179,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         datasource.Add<TestController>();
 
@@ -190,32 +193,12 @@ public class EventWatcherDatasource_Tests
     }
 
     [Test]
-    public async Task GetWatchers_Should_IncludeGlobalMetadataInWatcher()
-    {
-        // Arrange
-        var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
-
-        datasource.Add<TestController>();
-
-        // Act
-        var watchers = datasource.GetWatchers().ToList();
-
-        // Assert
-        var watcherMetadata = watchers[0].Metadata;
-        await Assert.That(watcherMetadata.OfType<OperatorNameAttribute>()).HasSingleItem();
-        await Assert.That(watcherMetadata.OfType<DockerImageAttribute>()).HasSingleItem();
-        await Assert.That(watcherMetadata.OfType<NamespaceAttribute>()).HasSingleItem();
-    }
-
-    [Test]
     public async Task GetWatchers_Should_IncludeResourceMetadataInWatcher()
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         datasource.Add<TestController>();
 
@@ -236,8 +219,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         datasource.Add<TestController>();
 
@@ -254,8 +237,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         datasource.Add<TestController>();
 
@@ -271,8 +254,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         datasource.Add<TestController>();
         datasource.Add<AnotherTestController>();
@@ -291,12 +274,11 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         // Act & Assert
-        await Assert.That(datasource.Metadata).IsEqualTo(metadata);
-        await Assert.That(datasource.Metadata).Count().IsEqualTo(3);
+        await Assert.That(datasource.Configuration).IsEqualTo(configuration);
     }
 
     [Test]
@@ -304,8 +286,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
 
         // Act & Assert
         await Assert.That(datasource.ServiceProvider).IsEqualTo(serviceProvider);
@@ -316,8 +298,8 @@ public class EventWatcherDatasource_Tests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var metadata = CreateMetadata();
-        var datasource = new EventWatcherDatasource(serviceProvider, metadata);
+        var configuration = CreateConfiguration();
+        var datasource = new EventWatcherDatasource(serviceProvider, configuration);
         var buildCount = 0;
 
         datasource.Add<TestController>()

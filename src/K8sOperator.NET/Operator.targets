@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
+	<!-- Load MSBuild task from BuildTasks assembly -->
+	<!-- For project references, use relative path to the built DLL. For NuGet packages, use the packaged path -->
+	<PropertyGroup>
+		<_BuildTasksPath Condition="'$(_BuildTasksPath)' == '' AND Exists('$(MSBuildThisFileDirectory)..\K8sOperator.NET.BuildTasks\bin\$(Configuration)\netstandard2.0\K8sOperator.NET.BuildTasks.dll')">$(MSBuildThisFileDirectory)..\K8sOperator.NET.BuildTasks\bin\$(Configuration)\netstandard2.0\K8sOperator.NET.BuildTasks.dll</_BuildTasksPath>
+		<_BuildTasksPath Condition="'$(_BuildTasksPath)' == ''">$(MSBuildThisFileDirectory)..\build\netstandard2.0\K8sOperator.NET.BuildTasks.dll</_BuildTasksPath>
+	</PropertyGroup>
+	<UsingTask TaskName="K8sOperator.NET.BuildTasks.GenerateDockerfileTask" AssemblyFile="$(_BuildTasksPath)" />
+	<UsingTask TaskName="K8sOperator.NET.BuildTasks.GenerateLaunchSettingsTask" AssemblyFile="$(_BuildTasksPath)" />
+
 	<!-- Diagnostic message to confirm target file is loaded -->
 	<Target Name="OperatorTargetsLoaded" BeforeTargets="BeforeBuild">
 		<Message Importance="high" Text="K8sOperator.NET: Operator.targets has been loaded successfully" />
@@ -69,26 +78,29 @@
 		<MakeDir Directories="$(MSBuildProjectDirectory)\Properties" Condition="!Exists('$(MSBuildProjectDirectory)\Properties')" />
 	</Target>
 
-	<!-- Copy launchSettings.json if it doesn't exist -->
+	<!-- Generate launchSettings.json if it doesn't exist -->
 	<Target Name="CreateOperatorLaunchSettings" AfterTargets="Build" Condition=" '$(CreateOperatorLaunchSettings)' == 'true' AND !Exists('$(MSBuildProjectDirectory)\Properties\launchSettings.json') ">
-		<Message Importance="high" Text="K8sOperator.NET: Generating launchSettings.json from registered commands..." />
-		
-		<Exec Command="dotnet run --no-build -- generate-launchsettings" 
-		      WorkingDirectory="$(MSBuildProjectDirectory)"
-		      IgnoreExitCode="false" />
-		
-		<Message Importance="high" Text="K8sOperator.NET: launchSettings.json generated successfully" />
+		<GenerateLaunchSettingsTask
+			ProjectDirectory="$(MSBuildProjectDirectory)" />
 	</Target>
 
 	<!-- Generate Dockerfile if it doesn't exist -->
-	<Target Name="GenerateDockerfile" AfterTargets="Build" Condition=" '$(GenerateOperatorDockerfile)' == 'true' AND !Exists('$(MSBuildProjectDirectory)\Dockerfile') ">
-		<Message Importance="high" Text="K8sOperator.NET: Generating Dockerfile..." />
-		
-		<Exec Command="dotnet run --no-build -- generate-dockerfile" 
-		      WorkingDirectory="$(MSBuildProjectDirectory)"
-		      IgnoreExitCode="false" />
-		
-		<Message Importance="high" Text="K8sOperator.NET: Dockerfile generated successfully" />
+	<Target Name="GenerateDockerfile" 
+	        DependsOnTargets="AddDockerImageAttribute" 
+	        BeforeTargets="Build" 
+	        Condition=" '$(GenerateOperatorDockerfile)' == 'true' AND !Exists('$(MSBuildProjectDirectory)\Dockerfile') ">
+		<GenerateDockerfileTask
+			ProjectDirectory="$(MSBuildProjectDirectory)"
+			ProjectName="$(MSBuildProjectName)"
+			TargetFramework="$(TargetFramework)"
+			OperatorName="$(OperatorName)"
+			ContainerRegistry="$(ContainerRegistry)"
+			ContainerRepository="$(_FullContainerRepository)"
+			ContainerTag="$(_FullContainerTag)" />
 	</Target>
 
 </Project>
+
+
+
+

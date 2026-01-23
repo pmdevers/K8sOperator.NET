@@ -39,14 +39,9 @@
   <ItemGroup>
     <PackageReference Include="KubernetesClient" Version="18.0.13" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
-  </ItemGroup>
-
-  <!-- Embed template files as resources -->
-  <ItemGroup>
-    <EmbeddedResource Include="Templates\Dockerfile.template" />
-    <EmbeddedResource Include="Templates\.dockerignore.template" />
   </ItemGroup>
 
   <!-- Pack Operator.targets for NuGet consumers (both direct and transitive) -->
@@ -54,6 +49,36 @@
     <None Include="Operator.targets" Pack="true" PackagePath="build\$(PackageId).targets" />
     <None Include="Operator.targets" Pack="true" PackagePath="buildTransitive\$(PackageId).targets" />
   </ItemGroup>
+
+  <!-- Reference BuildTasks project -->
+  <ItemGroup>
+    <ProjectReference Include="..\K8sOperator.NET.BuildTasks\K8sOperator.NET.BuildTasks.csproj" ReferenceOutputAssembly="false">
+      <!-- Ensure build outputs are available for packing -->
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>none</IncludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- Pack BuildTasks assembly and all dependencies -->
+  <!-- This target runs after BuildTasks is built but before creating the package -->
+  <Target Name="IncludeBuildTasksInPackage" BeforeTargets="_GetPackageFiles" DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <!-- Get all DLL files from the BuildTasks output directory -->
+      <_BuildTasksDlls Include="..\K8sOperator.NET.BuildTasks\bin\$(Configuration)\netstandard2.0\*.dll" />
+    </ItemGroup>
+    
+    <!-- Add each DLL to the package for both build and buildTransitive paths -->
+    <ItemGroup>
+      <None Include="@(_BuildTasksDlls)">
+        <Pack>true</Pack>
+        <PackagePath>build\netstandard2.0\%(Filename)%(Extension)</PackagePath>
+      </None>
+      <None Include="@(_BuildTasksDlls)">
+        <Pack>true</Pack>
+        <PackagePath>buildTransitive\netstandard2.0\%(Filename)%(Extension)</PackagePath>
+      </None>
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <None Include="..\..\assets\$(PackageIcon)">
