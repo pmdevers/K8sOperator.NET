@@ -1,4 +1,5 @@
 ﻿using K8sOperator.NET.Builder;
+using K8sOperator.NET.Configuration;
 
 namespace K8sOperator.NET;
 
@@ -11,12 +12,12 @@ public interface IEventWatcher
 }
 
 
-public class EventWatcherDatasource(IServiceProvider serviceProvider, List<object> metadata)
+public class EventWatcherDatasource(IServiceProvider serviceProvider, OperatorConfiguration configuration)
 {
     private readonly List<ControllerEntry> _controllers = [];
     public IServiceProvider ServiceProvider { get; } = serviceProvider;
 
-    public List<object> Metadata { get; } = metadata;
+    public OperatorConfiguration Configuration { get; } = configuration;
 
     public ConventionBuilder<ControllerBuilder> Add<TController>()
         where TController : IOperatorController
@@ -35,7 +36,7 @@ public class EventWatcherDatasource(IServiceProvider serviceProvider, List<objec
     {
         foreach (var controller in _controllers)
         {
-            var builder = ControllerBuilder.Create(ServiceProvider, controller.ControllerType, Metadata);
+            var builder = ControllerBuilder.Create(ServiceProvider, controller.ControllerType, Configuration);
 
             foreach (var convention in controller.Conventions)
             {
@@ -44,7 +45,7 @@ public class EventWatcherDatasource(IServiceProvider serviceProvider, List<objec
 
             var result = builder.Build();
 
-            var eventWatcher = EventWatcherBuilder.Create(ServiceProvider, result, builder.Metadata)
+            var eventWatcher = EventWatcherBuilder.Create(ServiceProvider, Configuration, result, builder.Metadata)
                 .Build();
 
             yield return eventWatcher;
@@ -57,6 +58,8 @@ public class EventWatcherDatasource(IServiceProvider serviceProvider, List<objec
         public required List<Action<ControllerBuilder>> Conventions { get; init; }
     }
 }
+
+
 
 public record ControllerInfo(
     IOperatorController Controller,

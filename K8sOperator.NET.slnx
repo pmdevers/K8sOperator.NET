@@ -3,6 +3,7 @@
     <Project Path="examples/SimpleOperator/SimpleOperator.csproj" Id="ed579abf-9eb5-4f74-95e3-8f4ac03f760a" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/K8sOperator.NET.BuildTasks/K8sOperator.NET.BuildTasks.csproj" Id="4f783416-fb78-4362-a8c4-48df7d68bebe" />
     <Project Path="src/K8sOperator.NET/K8sOperator.NET.csproj" />
   </Folder>
   <Folder Name="/test/">

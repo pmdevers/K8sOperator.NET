@@ -1,5 +1,6 @@
 ﻿using K8sOperator.NET;
 using K8sOperator.NET.Builder;
+using K8sOperator.NET.Configuration;
 using K8sOperator.NET.Generation;
 using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,20 +13,17 @@ internal class VersionCommand(IHost app) : IOperatorCommand
 {
     public Task RunAsync(string[] args)
     {
-        var watcher = app.Services.GetRequiredService<EventWatcherDatasource>();
-        var name = watcher.Metadata.OfType<OperatorNameAttribute>().FirstOrDefault()
-            ?? OperatorNameAttribute.Default;
-        var version = watcher.Metadata.OfType<DockerImageAttribute>().FirstOrDefault()
-            ?? DockerImageAttribute.Default;
+        var config = app.Services.GetRequiredService<OperatorConfiguration>();
 
-        if (string.IsNullOrWhiteSpace(name.OperatorName) || string.IsNullOrWhiteSpace(version.Tag))
+        if (string.IsNullOrWhiteSpace(config.OperatorName) || string.IsNullOrWhiteSpace(config.ContainerTag))
         {
             Console.WriteLine("Operator name or version metadata is missing.");
             return Task.CompletedTask;
         }
 
-        Console.WriteLine($"{name} version {version}.");
-        Console.WriteLine($"Docker Info: {version.GetImage()}.");
+        Console.WriteLine($"{config.OperatorName} version {config.ContainerTag}.");
+        Console.WriteLine($"Docker Info: {config.ContainerImage}.");
         return Task.CompletedTask;
     }
 }
+

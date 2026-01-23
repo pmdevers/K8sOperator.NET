@@ -2,6 +2,7 @@
 using k8s.Autorest;
 using k8s.Models;
 using K8sOperator.NET;
+using K8sOperator.NET.Configuration;
 using K8sOperator.NET.Generation;
 using K8sOperator.NET.Metadata;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,7 @@ using System.Text.Json;
 namespace K8sOperator.NET;
 
 public class EventWatcher<T>(
+    OperatorConfiguration configuration,
     IKubernetes kubernetes,
     OperatorController<T> controller,
     List<object> metadata,
@@ -17,6 +19,7 @@ public class EventWatcher<T>(
     where T : CustomResource
 {
 
+    public OperatorConfiguration Configuration { get; } = configuration;
     public IReadOnlyList<object> Metadata { get; } = metadata;
     public ILogger Logger { get; } = loggerFactory.CreateLogger("Watcher");
     public IOperatorController Controller { get; } = controller;
@@ -266,7 +269,7 @@ public class EventWatcher<T>(
                 body: resource,
                 group: Crd.Group,
                 version: Crd.ApiVersion,
-                namespaceParameter: Namespace.Namespace,
+                namespaceParameter: Configuration.Namespace,
                 plural: Crd.PluralName,
                 name: resource.Metadata.Name,
                 cancellationToken: cancellationToken),
@@ -295,14 +298,14 @@ public class EventWatcher<T>(
             EntityScope.Namespaced => kubernetes.CustomObjects.WatchListNamespacedCustomObjectAsync(
                 group: Crd.Group,
                 version: Crd.ApiVersion,
-                namespaceParameter: Namespace.Namespace,
+                namespaceParameter: Configuration.Namespace,
                 plural: Crd.PluralName,
                 allowWatchBookmarks: true,
                 labelSelector: LabelSelector.LabelSelector,
                 timeoutSeconds: (int)TimeSpan.FromMinutes(60).TotalSeconds,
                 onError: (ex) =>
                 {
-                    Logger.LogWatchError(ex, Namespace.Namespace, Crd.PluralName, LabelSelector.LabelSelector);
+                    Logger.LogWatchError(ex, Configuration.Namespace, Crd.PluralName, LabelSelector.LabelSelector);
                 },
                 cancellationToken: _cancellationToken),
 
@@ -317,9 +320,6 @@ public class EventWatcher<T>(
 
     private KubernetesEntityAttribute Crd => Metadata.OfType<KubernetesEntityAttribute>().FirstOrDefault()
         ?? throw new InvalidOperationException($"Controller metadata must include a {nameof(KubernetesEntityAttribute)}. Ensure the controller's resource type is properly decorated.");
-
-    private NamespaceAttribute Namespace => Metadata.OfType<NamespaceAttribute>().FirstOrDefault() ??
-            NamespaceAttribute.Default;
 
     private ScopeAttribute Scope => Metadata.OfType<ScopeAttribute>().FirstOrDefault() ??
             ScopeAttribute.Default;

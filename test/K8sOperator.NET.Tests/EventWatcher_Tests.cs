@@ -1,4 +1,5 @@
 ﻿using k8s.Models;
+using K8sOperator.NET.Configuration;
 using K8sOperator.NET.Metadata;
 using K8sOperator.NET.Tests.Fixtures;
 using K8sOperator.NET.Tests.Logging;
@@ -30,7 +31,7 @@ public class EventWatcher_Tests()
             endpoints.CustomObjects.WatchListClusterCustomObjectAsync(WatchEvents<TestResource>.Added);
         });
 
-        var watcher = new EventWatcher<TestResource>(server.Client, _controller, _metadata, _loggerFactory);
+        var watcher = new EventWatcher<TestResource>(new OperatorConfiguration(), server.Client, _controller, _metadata, _loggerFactory);
 
         await watcher.Start(cancellationToken);
 
@@ -47,7 +48,7 @@ public class EventWatcher_Tests()
             endpoints.CustomObjects.ReplaceNamespacedCustomObjectAsync<TestResource>();
         });
 
-        var watcher = new EventWatcher<TestResource>(server.Client, _controller, _metadata, _loggerFactory);
+        var watcher = new EventWatcher<TestResource>(new OperatorConfiguration(), server.Client, _controller, _metadata, _loggerFactory);
 
         await watcher.Start(cancellationToken);
 
@@ -65,7 +66,7 @@ public class EventWatcher_Tests()
             endpoints.CustomObjects.ReplaceNamespacedCustomObjectAsync<TestResource>();
         });
 
-        var watcher = new EventWatcher<TestResource>(server.Client, _controller, _metadata, _loggerFactory);
+        var watcher = new EventWatcher<TestResource>(new OperatorConfiguration(), server.Client, _controller, _metadata, _loggerFactory);
 
         await watcher.Start(cancellationToken);
 
@@ -83,7 +84,7 @@ public class EventWatcher_Tests()
             endpoints.CustomObjects.ReplaceNamespacedCustomObjectAsync<TestResource>();
         });
 
-        var watcher = new EventWatcher<TestResource>(server.Client, _controller, _metadata, _loggerFactory);
+        var watcher = new EventWatcher<TestResource>(new OperatorConfiguration(), server.Client, _controller, _metadata, _loggerFactory);
 
         await watcher.Start(cancellationToken);
 
@@ -103,7 +104,7 @@ public class EventWatcher_Tests()
             });
         });
 
-        var watcher = new EventWatcher<TestResource>(server.Client, _controller, _metadata, _loggerFactory);
+        var watcher = new EventWatcher<TestResource>(new OperatorConfiguration(), server.Client, _controller, _metadata, _loggerFactory);
 
         await watcher.Start(cancellationToken);
     }

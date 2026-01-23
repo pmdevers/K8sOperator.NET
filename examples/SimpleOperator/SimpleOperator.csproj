@@ -16,10 +16,10 @@
   <PropertyGroup>
     <OperatorName>simple-operator</OperatorName>
     <OperatorNamespace>simple-system</OperatorNamespace>
-    <!--
-    <ContainerRegistry>ghcr.io</ContainerRegistry>
+    
+    <ContainerRegistry>test.ghcr.io</ContainerRegistry>
     <ContainerRepository>simple-operator</ContainerRepository>
-    -->
+    
     <ContainerFamily>alpha</ContainerFamily>
   </PropertyGroup>
 
