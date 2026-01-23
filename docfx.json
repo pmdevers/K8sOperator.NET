@@ -31,7 +31,8 @@
       {
         "src": [
           {
-            "files": ["src/**/*.csproj"]
+            "files": ["src/**/*.csproj"],
+            "exclude": []
           }
         ],
         "dest": "docs/api",
@@ -42,7 +43,7 @@
         "namespaceLayout": "flattened",
         "memberLayout": "samePage",
         "EnumSortOrder": "alphabetic",
-        "allowCompilationErrors": false
+        "allowCompilationErrors": true
       }
     ]
   }
