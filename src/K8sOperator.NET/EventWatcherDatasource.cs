@@ -23,6 +23,7 @@ public class EventWatcherDatasource(IServiceProvider serviceProvider, OperatorCo
         where TController : IOperatorController
     {
         var conventions = new List<Action<ControllerBuilder>>();
+
         _controllers.Add(new ControllerEntry
         {
             ControllerType = typeof(TController),
